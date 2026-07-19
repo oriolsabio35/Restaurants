@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Llibreta — guia de restaurants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F2E8;
+    --paper: #FFFFFF;
+    --ink: #1E2A2E;
+    --ink-soft: #57605F;
+    --line: #DCD5C4;
+    --teal: #0F6E63;
+    --teal-dark: #0A4D45;
+    --teal-tint: #E1F1EE;
+    --saffron: #E0A430;
+    --saffron-dark: #8A5F14;
+    --saffron-tint: #FBEFD9;
+    --olive: #6E7B3E;
+    --olive-dark: #454E24;
+    --olive-tint: #EEF0DF;
+    --stamp: #A6431F;
+    --stamp-tint: #F7E4DC;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(30,42,46,0.06), 0 6px 20px rgba(30,42,46,0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 56px 0 32px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 46px;
+    line-height: 1.05;
+    margin: 0 0 14px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero p.sub {
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 540px;
+    margin: 0 0 26px;
+    line-height: 1.55;
+  }
+  .stats {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .stat .n {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--teal-dark);
+    line-height: 1;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* ---------- Controls ---------- */
+  .controls {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 16px 0;
+    z-index: 20;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .controls-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-box {
+    flex: 1 1 240px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+  .search-box input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .search-box svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+  select {
+    padding: 10px 30px 10px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2357605F'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+  }
+  .toggle-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    user-select: none;
+  }
+  .toggle-chip.active {
+    background: var(--stamp-tint);
+    border-color: var(--stamp);
+    color: var(--stamp);
+    font-weight: 600;
+  }
+  .add-btn {
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: none;
+    background: var(--teal);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .add-btn:hover { background: var(--teal-dark); }
+
+  .result-count {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 14px 2px 18px;
+  }
+
+  /* ---------- Grid & Cards ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 18px 16px;
+    position: relative;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; line-height: 1.2; margin: 0; }
+  .stamp {
+    flex-shrink: 0;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: 2px solid var(--stamp);
+    color: var(--stamp);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    transform: rotate(-8deg);
+    font-family: 'Fraunces', serif;
+  }
+  .stamp .v { font-size: 15px; font-weight: 700; line-height: 1; }
+  .stamp .s { font-size: 8px; letter-spacing: 0.04em; }
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .tag.zona { background: var(--teal-tint); color: var(--teal-dark); }
+  .tag.tipus { background: var(--olive-tint); color: var(--olive-dark); }
+  .tag.chollo { background: var(--saffron-tint); color: var(--saffron-dark); }
+  .esp {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: 0;
+    min-height: 20px;
+  }
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .price { font-size: 13px; color: var(--ink-soft); }
+  .price b { color: var(--ink); }
+  .card-actions { display: flex; gap: 10px; align-items: center; }
+  .card-actions a, .card-actions button {
+    font-size: 12.5px;
+    color: var(--teal-dark);
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+  }
+  .card-actions button.del { color: var(--stamp); }
+  .obs {
+    font-size: 12px;
+    color: var(--stamp-dark, #8a5230);
+    background: var(--stamp-tint);
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin: 0;
+    line-height: 1.4;
+  }
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-soft);
+  }
+  .empty h3 { font-family: 'Fraunces', serif; font-size: 22px; color: var(--ink); margin: 0 0 8px; }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(30,42,46,0.45);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    z-index: 100;
+    overflow-y: auto;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: var(--paper);
+    border-radius: 18px;
+    max-width: 520px;
+    width: 100%;
+    padding: 28px 28px 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 6px; }
+  .modal .modal-sub { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 20px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--bg);
+  }
+  .field textarea { resize: vertical; min-height: 54px; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .btn-secondary {
+    padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--paper); font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer;
+  }
+  .btn-primary {
+    padding: 10px 20px; border-radius: 999px; border: none;
+    background: var(--teal); color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff;
+    padding: 12px 20px; border-radius: 999px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: all 0.25s ease;
+    z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 32px; }
+    .controls-row { flex-direction: column; align-items: stretch; }
+    select, .add-btn, .toggle-chip { width: 100%; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <p class="eyebrow">Guia personal</p>
+    <h1>La llibreta de restaurants</h1>
+    <p class="sub">Tots els llocs on vull anar, ordenats per zona i tipus de cuina — amb valoració de Google i preu estimat per persona.</p>
+    <div class="stats">
+      <div class="stat"><div class="n" id="stat-total">0</div><div class="l">Restaurants</div></div>
+      <div class="stat"><div class="n" id="stat-chollo">0</div><div class="l">Bona relació qualitat-preu</div></div>
+      <div class="stat"><div class="n" id="stat-visited">0</div><div class="l">Visitats</div></div>
+      <div class="stat"><div class="n" id="stat-zones">0</div><div class="l">Zones</div></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="controls-row">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#57605F" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search" placeholder="Cerca un restaurant, ciutat o especialitat...">
+      </div>
+      <select id="filter-zona"><option value="">Totes les zones</option></select>
+      <select id="filter-tipus"><option value="">Tots els tipus</option></select>
+      <select id="sort-by">
+        <option value="google-desc">Millor valorats</option>
+        <option value="price-asc">Preu: de menys a més</option>
+        <option value="price-desc">Preu: de més a menys</option>
+        <option value="name-asc">Nom (A-Z)</option>
+      </select>
+      <div class="toggle-chip" id="chollo-toggle">💎 Només chollos</div>
+      <button class="add-btn" id="open-add">+ Afegir restaurant</button>
+    </div>
+  </div>
+
+  <p class="result-count" id="result-count"></p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modal-title">Afegir restaurant</h2>
+    <p class="modal-sub">Es guardarà automàticament a la teva llibreta.</p>
+    <form id="restaurant-form">
+      <div class="field">
+        <label>Nom del restaurant *</label>
+        <input type="text" id="f-restaurant" required placeholder="Ex: Can Culleretes">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Ciutat *</label>
+          <input type="text" id="f-ciutat" required placeholder="Ex: Barcelona" list="cities-list">
+          <datalist id="cities-list"></datalist>
+        </div>
+        <div class="field">
+          <label>Zona *</label>
+          <input type="text" id="f-zona" required placeholder="Ex: Barcelona ciutat" list="zones-list">
+          <datalist id="zones-list"></datalist>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipus de cuina *</label>
+        <input type="text" id="f-tipus" required placeholder="Ex: Italià" list="types-list">
+        <datalist id="types-list"></datalist>
+      </div>
+      <div class="field">
+        <label>Especialitat / plat recomanat</label>
+        <input type="text" id="f-especialitat" placeholder="Ex: Pasta fresca casolana">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Valoració Google (0-5)</label>
+          <input type="number" id="f-google" step="0.1" min="0" max="5" placeholder="4.5">
+        </div>
+        <div class="field">
+          <label>Preu mitjà (€/pers.)</label>
+          <input type="number" id="f-preu" step="1" min="0" placeholder="35">
+        </div>
+      </div>
+      <div class="field">
+        <label>Enllaç de Google Maps</label>
+        <input type="url" id="f-maps" placeholder="https://maps.google.com/...">
+      </div>
+      <div class="field">
+        <label>Observacions</label>
+        <textarea id="f-obs" placeholder="Notes, avisos, coses a tenir en compte..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancel-btn">Cancel·lar</button>
+        <button type="submit" class="btn-primary" id="save-btn">Desar restaurant</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- CONFIGURA AQUÍ el teu projecte de Supabase ----
+const SUPABASE_URL = 'PEGA_AQUI_LA_TEVA_PROJECT_URL';
+const SUPABASE_ANON_KEY = 'PEGA_AQUI_LA_TEVA_ANON_KEY';
+// -----------------------------------------------------
+
+const supabaseClient = (SUPABASE_URL.startsWith('http'))
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+let allData = [];
+let editingId = null;
+
+function uid() { return 'r' + Date.now() + Math.random().toString(36).slice(2,7); }
+
+function zoneColor(zona) {
+  const idx = ZONES.indexOf(zona);
+  const palette = ['teal','olive','saffron'];
+  return palette[idx % 3] || 'teal';
+}
+
+async function loadData() {
+  if (!supabaseClient) {
+    document.getElementById('grid').innerHTML =
+      '<div class="empty" style="grid-column:1/-1;"><h3>Falta configurar Supabase</h3>' +
+      '<p>Obre l\'arxiu HTML amb un editor de text i omple SUPABASE_URL i SUPABASE_ANON_KEY ' +
+      'a l\'inici del &lt;script&gt;, seguint les instruccions.</p></div>';
+    return;
+  }
+  const { data, error } = await supabaseClient
+    .from('restaurants')
+    .select('*')
+    .order('restaurant', { ascending: true });
+  if (error) {
+    console.error(error);
+    showToast('No s\'han pogut carregar les dades.');
+    allData = [];
+    return;
+  }
+  allData = data;
+}
+
+async function insertRestaurant(entry) {
+  const { data, error } = await supabaseClient
+    .from('restaurants')
+    .insert([entry])
+    .select();
+  if (error) {
+    console.error(error);
+    showToast('No s\'ha pogut desar. Revisa la connexió.');
+    return null;
+  }
+  return data[0];
+}
+
+async function deleteRestaurant(id) {
+  const { error } = await supabaseClient.from('restaurants').delete().eq('id', id);
+  if (error) {
+    console.error(error);
+    showToast('No s\'ha pogut eliminar.');
+    return false;
+  }
+  return true;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function populateSelects() {
+  const fz = document.getElementById('filter-zona');
+  const ft = document.getElementById('filter-tipus');
+  const zonesNow = [...new Set(allData.map(d => d.zona))].sort();
+  const typesNow = [...new Set(allData.map(d => d.tipus))].sort();
+  zonesNow.forEach(z => { const o = document.createElement('option'); o.value = z; o.textContent = z; fz.appendChild(o); });
+  typesNow.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; ft.appendChild(o); });
+
+  const dc = document.getElementById('cities-list');
+  const dz = document.getElementById('zones-list');
+  const dt = document.getElementById('types-list');
+  [...new Set(allData.map(d => d.ciutat))].sort().forEach(c => { const o = document.createElement('option'); o.value = c; dc.appendChild(o); });
+  zonesNow.forEach(z => { const o = document.createElement('option'); o.value = z; dz.appendChild(o); });
+  typesNow.forEach(t => { const o = document.createElement('option'); o.value = t; dt.appendChild(o); });
+}
+
+function updateStats(filtered) {
+  document.getElementById('stat-total').textContent = allData.length;
+  document.getElementById('stat-chollo').textContent = allData.filter(d => d.chollo || (d.google >= 4.6 && d.preu_mig <= 30)).length;
+  document.getElementById('stat-visited').textContent = allData.filter(d => d.visited).length;
+  document.getElementById('stat-zones').textContent = new Set(allData.map(d => d.zona)).size;
+  const rc = document.getElementById('result-count');
+  rc.textContent = filtered.length === allData.length
+    ? `Mostrant els ${filtered.length} restaurants`
+    : `${filtered.length} de ${allData.length} restaurants`;
+}
+
+function isChollo(d) {
+  return d.google != null && d.preu_mig != null && d.google >= 4.6 && d.preu_mig <= 30;
+}
+
+function render() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const fz = document.getElementById('filter-zona').value;
+  const ft = document.getElementById('filter-tipus').value;
+  const sortBy = document.getElementById('sort-by').value;
+  const cholloOnly = document.getElementById('chollo-toggle').classList.contains('active');
+
+  let filtered = allData.filter(d => {
+    if (fz && d.zona !== fz) return false;
+    if (ft && d.tipus !== ft) return false;
+    if (cholloOnly && !isChollo(d)) return false;
+    if (q) {
+      const hay = `${d.restaurant} ${d.ciutat} ${d.especialitat} ${d.tipus}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    if (sortBy === 'google-desc') return (b.google||0) - (a.google||0);
+    if (sortBy === 'price-asc') return (a.preu_mig ?? 9999) - (b.preu_mig ?? 9999);
+    if (sortBy === 'price-desc') return (b.preu_mig ?? -1) - (a.preu_mig ?? -1);
+    if (sortBy === 'name-asc') return a.restaurant.localeCompare(b.restaurant);
+    return 0;
+  });
+
+  updateStats(filtered);
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <h3>Cap resultat</h3>
+      <p>Prova amb un altre terme de cerca o treu algun filtre.</p>
+    </div>`;
+    return;
+  }
+
+  filtered.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const chollo = isChollo(d);
+    const ratingText = d.google != null ? d.google.toFixed(1) : '—';
+    const priceText = d.preu_mig != null ? `${Math.round(d.preu_mig)}€` : (d.preu || '—');
+    card.innerHTML = `
+      <div class="card-top">
+        <h3 class="card-title">${escapeHtml(d.restaurant)}</h3>
+        <div class="stamp"><span class="v">${ratingText}</span><span class="s">GOOGLE</span></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag zona">${escapeHtml(d.zona)}</span>
+        <span class="tag tipus">${escapeHtml(d.tipus)}</span>
+        ${chollo ? '<span class="tag chollo">💎 Chollo</span>' : ''}
+      </div>
+      <p class="esp">${escapeHtml(d.especialitat || '')}</p>
+      ${d.observacions ? `<p class="obs">${escapeHtml(d.observacions)}</p>` : ''}
+      <div class="card-foot">
+        <div class="price"><b>${priceText}</b> / pers.</div>
+        <div class="card-actions">
+          ${d.maps_url ? `<a href="${escapeAttr(d.maps_url)}" target="_blank" rel="noopener">Mapa ↗</a>` : ''}
+          <button class="del" data-id="${d.id}">Eliminar</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  grid.querySelectorAll('button.del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = e.target.getAttribute('data-id');
+      if (confirm('Eliminar aquest restaurant de la llibreta?')) {
+        const ok = await deleteRestaurant(id);
+        if (ok) {
+          allData = allData.filter(d => d.id !== id);
+          render();
+          showToast('Restaurant eliminat');
+        }
+      }
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+function openModal() {
+  document.getElementById('restaurant-form').reset();
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Afegir restaurant';
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+document.getElementById('open-add').addEventListener('click', openModal);
+document.getElementById('cancel-btn').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'overlay') closeModal();
+});
+
+document.getElementById('restaurant-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('save-btn');
+  const newEntry = {
+    restaurant: document.getElementById('f-restaurant').value.trim(),
+    ciutat: document.getElementById('f-ciutat').value.trim(),
+    zona: document.getElementById('f-zona').value.trim(),
+    tipus: document.getElementById('f-tipus').value.trim(),
+    especialitat: document.getElementById('f-especialitat').value.trim(),
+    google: document.getElementById('f-google').value ? parseFloat(document.getElementById('f-google').value) : null,
+    preu_mig: document.getElementById('f-preu').value ? parseFloat(document.getElementById('f-preu').value) : null,
+    preu: document.getElementById('f-preu').value ? `${document.getElementById('f-preu').value}€/pers. (estimat)` : '',
+    maps_url: document.getElementById('f-maps').value.trim() || null,
+    observacions: document.getElementById('f-obs').value.trim(),
+    chollo: false,
+    visited: false,
+    favorite: false,
+  };
+  if (!newEntry.restaurant || !newEntry.ciutat || !newEntry.zona || !newEntry.tipus) return;
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Desant...';
+  const inserted = await insertRestaurant(newEntry);
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Desar restaurant';
+  if (!inserted) return;
+
+  allData.unshift(inserted);
+  populateSelects();
+  closeModal();
+  render();
+  showToast(`${inserted.restaurant} afegit a la llibreta`);
+});
+
+['search','filter-zona','filter-tipus','sort-by'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+  document.getElementById(id).addEventListener('change', render);
+});
+document.getElementById('chollo-toggle').addEventListener('click', () => {
+  document.getElementById('chollo-toggle').classList.toggle('active');
+  render();
+});
+
+(async function init() {
+  await loadData();
+  populateSelects();
+  render();
+})();
+</script>
+</body>
+</html>
