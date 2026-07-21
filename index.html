@@ -319,10 +319,68 @@
     .controls-row { flex-direction: column; align-items: stretch; }
     select, .add-btn, .toggle-chip { width: 100%; }
   }
+
+  /* ---------- Password gate ---------- */
+  #gate-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500;
+    padding: 20px;
+  }
+  #gate-overlay.hidden { display: none; }
+  .gate-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 36px 32px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .gate-box h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 8px; }
+  .gate-box p { font-size: 14px; color: var(--ink-soft); margin: 0 0 20px; }
+  .gate-box input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 15px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .gate-box button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: var(--teal);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+  }
+  .gate-box .gate-error { color: var(--stamp); font-size: 13px; margin-top: 10px; min-height: 16px; }
+  #app-content.hidden { display: none; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+<div id="gate-overlay">
+  <div class="gate-box">
+    <h2>🔒 Accés privat</h2>
+    <p>Aquesta llibreta és privada. Escriu la contrasenya per continuar.</p>
+    <form id="gate-form">
+      <input type="password" id="gate-password" placeholder="Contrasenya" autocomplete="off">
+      <button type="submit">Entrar</button>
+      <div class="gate-error" id="gate-error"></div>
+    </form>
+  </div>
+</div>
+
+<div id="app-content" class="hidden">
 <div class="wrap">
 
   <div class="hero">
@@ -415,12 +473,13 @@
     </form>
   </div>
 </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 // ---- CONFIGURA AQUÍ el teu projecte de Supabase ----
-const SUPABASE_URL = 'https://yurbwfrbbvyvehpnjinv.supabase.co';
+const SUPABASE_URL = 'https://yurbwfrbbvyvehpnjinv.supabase.co/rest/v1/';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1cmJ3ZnJiYnZ5dmVocG5qaW52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NjU5NjcsImV4cCI6MjEwMDA0MTk2N30.RJ9s9idFZsPIqfeoZTHDwoVOoATDGDFK9OLKfLJS3uw';
 // -----------------------------------------------------
 
@@ -668,11 +727,39 @@ document.getElementById('chollo-toggle').addEventListener('click', () => {
   render();
 });
 
-(async function init() {
+// ---- CONFIGURA AQUÍ la contrasenya d'accés ----
+const SITE_PASSWORD = 'Orisabio5?';
+// ------------------------------------------------
+
+const GATE_KEY = 'restaurants-guia-unlocked';
+
+async function initApp() {
+  document.getElementById('gate-overlay').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('hidden');
   await loadData();
   populateSelects();
   render();
-})();
+}
+
+function checkGate() {
+  if (localStorage.getItem(GATE_KEY) === 'yes') {
+    initApp();
+    return;
+  }
+  document.getElementById('gate-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const val = document.getElementById('gate-password').value;
+    if (val === SITE_PASSWORD) {
+      localStorage.setItem(GATE_KEY, 'yes');
+      initApp();
+    } else {
+      document.getElementById('gate-error').textContent = 'Contrasenya incorrecta.';
+      document.getElementById('gate-password').value = '';
+    }
+  });
+}
+
+checkGate();
 </script>
 </body>
 </html>
