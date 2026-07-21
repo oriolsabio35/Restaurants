@@ -3,30 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>La Llibreta — guia de restaurants</title>
+<title>Llibreta — guia de restaurants</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #F6F2E8;
+    --bg: #F5F6F8;
     --paper: #FFFFFF;
-    --ink: #1E2A2E;
-    --ink-soft: #57605F;
-    --line: #DCD5C4;
-    --teal: #0F6E63;
-    --teal-dark: #0A4D45;
-    --teal-tint: #E1F1EE;
-    --saffron: #E0A430;
-    --saffron-dark: #8A5F14;
-    --saffron-tint: #FBEFD9;
-    --olive: #6E7B3E;
-    --olive-dark: #454E24;
-    --olive-tint: #EEF0DF;
-    --stamp: #A6431F;
-    --stamp-tint: #F7E4DC;
-    --radius: 14px;
-    --shadow: 0 1px 2px rgba(30,42,46,0.06), 0 6px 20px rgba(30,42,46,0.06);
+    --ink: #12151A;
+    --ink-soft: #676E79;
+    --ink-faint: #9AA1AC;
+    --line: #E7E9EE;
+    --accent: #0E9C93;
+    --accent-dark: #0A7A73;
+    --accent-tint: #E2F6F4;
+    --warn: #F59E0B;
+    --warn-tint: #FEF2DC;
+    --danger: #E24C4C;
+    --danger-tint: #FCEAEA;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 2px rgba(17,21,26,0.04), 0 10px 28px rgba(17,21,26,0.06);
+    --shadow-lg: 0 20px 60px rgba(17,21,26,0.22);
+  }
+  html[data-theme="dark"] {
+    --bg: #0E1013;
+    --paper: #191C21;
+    --ink: #F2F3F5;
+    --ink-soft: #A0A6B0;
+    --ink-faint: #6B7280;
+    --line: #2A2E36;
+    --accent: #2FD4C4;
+    --accent-dark: #1FB8A9;
+    --accent-tint: rgba(47,212,196,0.14);
+    --warn: #FBBF3E;
+    --warn-tint: rgba(251,191,62,0.14);
+    --danger: #F3746F;
+    --danger-tint: rgba(243,116,111,0.14);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 28px rgba(0,0,0,0.4);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.55);
   }
   * { box-sizing: border-box; }
   body {
@@ -35,336 +53,171 @@
     color: var(--ink);
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
+    transition: background 0.2s ease, color 0.2s ease;
   }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 90px; }
+  h1, h2, h3, .heading { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-  /* ---------- Hero ---------- */
-  .hero {
-    padding: 56px 0 32px;
+  /* ---------- Topbar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
-    margin-bottom: 28px;
   }
-  .eyebrow {
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin: 0 0 10px;
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 46px;
-    line-height: 1.05;
-    margin: 0 0 14px;
-    color: var(--ink);
-    letter-spacing: -0.01em;
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
   }
-  .hero p.sub {
-    font-size: 16px;
-    color: var(--ink-soft);
-    max-width: 540px;
-    margin: 0 0 26px;
-    line-height: 1.55;
+  .brand-name { font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+  .theme-toggle {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; color: var(--ink-soft);
   }
-  .stats {
-    display: flex;
-    gap: 28px;
-    flex-wrap: wrap;
+
+  /* ---------- Hero / stats ---------- */
+  .hero { padding: 28px 0 20px; }
+  .hero h1 { font-size: 30px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .hero p { font-size: 14.5px; color: var(--ink-soft); margin: 0 0 20px; max-width: 520px; line-height: 1.5; }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stat-pill {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+    padding: 8px 16px; display: flex; align-items: baseline; gap: 6px;
   }
-  .stat .n {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--teal-dark);
-    line-height: 1;
-  }
-  .stat .l {
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    margin-top: 4px;
-  }
+  .stat-pill .n { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 16px; color: var(--accent-dark); }
+  .stat-pill .l { font-size: 12px; color: var(--ink-soft); }
 
   /* ---------- Controls ---------- */
-  .controls {
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    padding: 16px 0;
-    z-index: 20;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 24px;
-  }
-  .controls-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .search-box {
-    flex: 1 1 240px;
-    position: relative;
-  }
+  .controls { padding: 6px 0 18px; }
+  .controls-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .search-box { flex: 1 1 220px; position: relative; }
   .search-box input {
-    width: 100%;
-    padding: 11px 14px 11px 38px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--paper);
-    font-family: 'Inter', sans-serif;
-    font-size: 14.5px;
-    color: var(--ink);
+    width: 100%; padding: 11px 14px 11px 38px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+    font-family: 'Inter', sans-serif; font-size: 14.5px;
   }
-  .search-box input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .search-box input::placeholder { color: var(--ink-faint); }
+  .search-box input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .search-box svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
   select {
-    padding: 10px 30px 10px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--paper);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: var(--ink);
+    padding: 10px 30px 10px 14px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 13.5px;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2357605F'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 13px center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23676E79'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 13px center;
   }
   .toggle-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--paper);
-    font-size: 14px;
-    cursor: pointer;
-    color: var(--ink-soft);
-    user-select: none;
+    display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--paper); font-size: 13.5px; cursor: pointer;
+    color: var(--ink-soft); user-select: none; white-space: nowrap;
   }
-  .toggle-chip.active {
-    background: var(--stamp-tint);
-    border-color: var(--stamp);
-    color: var(--stamp);
-    font-weight: 600;
-  }
-  .add-btn {
-    padding: 10px 20px;
-    border-radius: 999px;
-    border: none;
-    background: var(--teal);
-    color: #fff;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 14.5px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .add-btn:hover { background: var(--teal-dark); }
-
-  .result-count {
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin: 14px 2px 18px;
-  }
+  .toggle-chip.active { background: var(--warn-tint); border-color: var(--warn); color: var(--warn); font-weight: 700; }
+  .result-count { font-size: 13px; color: var(--ink-faint); margin: 4px 2px 16px; }
 
   /* ---------- Grid & Cards ---------- */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 18px;
-  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 14px; }
   .card {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 18px 18px 16px;
-    position: relative;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 16px 16px 14px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-  .card-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; line-height: 1.2; margin: 0; }
-  .stamp {
-    flex-shrink: 0;
-    width: 46px; height: 46px;
-    border-radius: 50%;
-    border: 2px solid var(--stamp);
-    color: var(--stamp);
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    transform: rotate(-8deg);
-    font-family: 'Fraunces', serif;
+  .card-title { font-weight: 700; font-size: 17px; line-height: 1.25; margin: 0; letter-spacing: -0.01em; }
+  .rating-badge {
+    flex-shrink: 0; display: flex; align-items: center; gap: 3px;
+    background: var(--accent-tint); color: var(--accent-dark);
+    padding: 5px 9px; border-radius: 999px; font-weight: 700; font-size: 13px;
   }
-  .stamp .v { font-size: 15px; font-weight: 700; line-height: 1; }
-  .stamp .s { font-size: 8px; letter-spacing: 0.04em; }
   .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  .tag {
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 999px;
-  }
-  .tag.zona { background: var(--teal-tint); color: var(--teal-dark); }
-  .tag.tipus { background: var(--olive-tint); color: var(--olive-dark); }
-  .tag.chollo { background: var(--saffron-tint); color: var(--saffron-dark); }
-  .esp {
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    line-height: 1.5;
-    margin: 0;
-    min-height: 20px;
-  }
+  .tag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+  .tag.zona { background: var(--accent-tint); color: var(--accent-dark); }
+  .tag.tipus { background: var(--bg); color: var(--ink-soft); border: 1px solid var(--line); }
+  .tag.chollo { background: var(--warn-tint); color: var(--warn); }
+  .esp { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin: 0; min-height: 18px; }
+  .obs { font-size: 12px; color: var(--danger); background: var(--danger-tint); padding: 8px 10px; border-radius: var(--radius-sm); margin: 0; line-height: 1.4; }
   .card-foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-    padding-top: 10px;
-    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center; margin-top: auto;
+    padding-top: 10px; border-top: 1px solid var(--line);
   }
   .price { font-size: 13px; color: var(--ink-soft); }
-  .price b { color: var(--ink); }
-  .card-actions { display: flex; gap: 10px; align-items: center; }
+  .price b { color: var(--ink); font-size: 14.5px; }
+  .card-actions { display: flex; gap: 14px; align-items: center; }
   .card-actions a, .card-actions button {
-    font-size: 12.5px;
-    color: var(--teal-dark);
-    text-decoration: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    padding: 0;
+    font-size: 12.5px; font-weight: 600; color: var(--accent-dark); text-decoration: none;
+    background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 0;
   }
-  .card-actions button.del { color: var(--stamp); }
-  .obs {
-    font-size: 12px;
-    color: var(--stamp-dark, #8a5230);
-    background: var(--stamp-tint);
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin: 0;
-    line-height: 1.4;
+  .card-actions button.del { color: var(--danger); }
+  .empty { text-align: center; padding: 60px 20px; color: var(--ink-soft); grid-column: 1/-1; }
+  .empty h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; color: var(--ink); margin: 0 0 8px; }
+
+  /* ---------- Floating add button ---------- */
+  .fab {
+    position: fixed; right: 22px; bottom: 22px; z-index: 40;
+    width: 58px; height: 58px; border-radius: 50%; border: none;
+    background: var(--accent); color: #fff; font-size: 26px; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(14,156,147,0.4);
+    display: flex; align-items: center; justify-content: center;
   }
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--ink-soft);
-  }
-  .empty h3 { font-family: 'Fraunces', serif; font-size: 22px; color: var(--ink); margin: 0 0 8px; }
+  .fab:hover { background: var(--accent-dark); }
 
   /* ---------- Modal ---------- */
   .overlay {
-    position: fixed; inset: 0;
-    background: rgba(30,42,46,0.45);
-    display: none;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 40px 16px;
-    z-index: 100;
-    overflow-y: auto;
+    position: fixed; inset: 0; background: rgba(10,12,15,0.5);
+    display: none; align-items: flex-start; justify-content: center;
+    padding: 40px 16px; z-index: 100; overflow-y: auto;
   }
   .overlay.show { display: flex; }
-  .modal {
-    background: var(--paper);
-    border-radius: 18px;
-    max-width: 520px;
-    width: 100%;
-    padding: 28px 28px 24px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-  }
-  .modal h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 6px; }
-  .modal .modal-sub { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 20px; }
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px; }
+  .modal { background: var(--paper); border-radius: var(--radius-lg); max-width: 520px; width: 100%; padding: 26px 26px 22px; box-shadow: var(--shadow-lg); }
+  .modal h2 { font-size: 21px; margin: 0 0 6px; font-weight: 800; }
+  .modal .modal-sub { font-size: 13px; color: var(--ink-soft); margin: 0 0 18px; }
+  .field { margin-bottom: 13px; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
   .field input, .field select, .field textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--line);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: var(--ink);
-    background: var(--bg);
+    width: 100%; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--line);
+    font-family: 'Inter', sans-serif; font-size: 14px; color: var(--ink); background: var(--bg);
   }
   .field textarea { resize: vertical; min-height: 54px; }
   .field-row { display: flex; gap: 10px; }
   .field-row .field { flex: 1; }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
-  .btn-secondary {
-    padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line);
-    background: var(--paper); font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer;
-  }
-  .btn-primary {
-    padding: 10px 20px; border-radius: 999px; border: none;
-    background: var(--teal); color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;
-  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+  .btn-secondary { padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; }
+  .btn-primary { padding: 10px 20px; border-radius: 999px; border: none; background: var(--accent); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; }
+
   .toast {
-    position: fixed;
-    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--ink); color: #fff;
-    padding: 12px 20px; border-radius: 999px; font-size: 14px;
-    opacity: 0; pointer-events: none; transition: all 0.25s ease;
-    z-index: 200;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--bg); padding: 12px 20px; border-radius: 999px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: all 0.25s ease; z-index: 200;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  @media (max-width: 640px) {
-    h1 { font-size: 32px; }
-    .controls-row { flex-direction: column; align-items: stretch; }
-    select, .add-btn, .toggle-chip { width: 100%; }
-  }
-
   /* ---------- Password gate ---------- */
-  #gate-overlay {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 500;
-    padding: 20px;
-  }
+  #gate-overlay { position: fixed; inset: 0; background: rgba(10,12,15,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
   #gate-overlay.hidden { display: none; }
-  .gate-box {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 36px 32px;
-    max-width: 360px;
-    width: 100%;
-    box-shadow: var(--shadow);
-    text-align: center;
+  .gate-box { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 34px 30px; max-width: 340px; width: 100%; box-shadow: var(--shadow-lg); text-align: center; }
+  .gate-box h2 { font-size: 21px; margin: 0 0 6px; font-weight: 800; }
+  .gate-box p { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 18px; }
+  .gate-box input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 15px; margin-bottom: 12px; text-align: center; }
+  .gate-box button { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--accent); color: #fff; font-weight: 700; font-size: 14.5px; cursor: pointer; }
+  .gate-box .gate-error { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 16px; }
+
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 24px; }
+    .controls-row { flex-direction: column; align-items: stretch; }
+    select, .toggle-chip { width: 100%; }
+    .fab { right: 16px; bottom: 16px; }
   }
-  .gate-box h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 8px; }
-  .gate-box p { font-size: 14px; color: var(--ink-soft); margin: 0 0 20px; }
-  .gate-box input {
-    width: 100%;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--line);
-    font-size: 15px;
-    margin-bottom: 12px;
-    text-align: center;
-  }
-  .gate-box button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: var(--teal);
-    color: #fff;
-    font-weight: 600;
-    font-size: 14.5px;
-    cursor: pointer;
-  }
-  .gate-box .gate-error { color: var(--stamp); font-size: 13px; margin-top: 10px; min-height: 16px; }
-  #app-content.hidden { display: none; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -381,25 +234,34 @@
   </div>
 </div>
 
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">🍴</div>
+      <div class="brand-name">Llibreta</div>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" title="Canviar tema">🌙</button>
+  </div>
+</div>
+
 <div id="app-content">
 <div class="wrap">
 
   <div class="hero">
-    <p class="eyebrow">Guia personal</p>
     <h1>La llibreta de restaurants</h1>
-    <p class="sub">Tots els llocs on vull anar, ordenats per zona i tipus de cuina — amb valoració de Google i preu estimat per persona.</p>
+    <p>Tots els llocs on vull anar, amb valoració de Google i preu estimat per persona.</p>
     <div class="stats">
-      <div class="stat"><div class="n" id="stat-total">0</div><div class="l">Restaurants</div></div>
-      <div class="stat"><div class="n" id="stat-chollo">0</div><div class="l">Bona relació qualitat-preu</div></div>
-      <div class="stat"><div class="n" id="stat-visited">0</div><div class="l">Visitats</div></div>
-      <div class="stat"><div class="n" id="stat-zones">0</div><div class="l">Zones</div></div>
+      <div class="stat-pill"><span class="n" id="stat-total">0</span><span class="l">restaurants</span></div>
+      <div class="stat-pill"><span class="n" id="stat-chollo">0</span><span class="l">bona relació qualitat-preu</span></div>
+      <div class="stat-pill"><span class="n" id="stat-visited">0</span><span class="l">visitats</span></div>
+      <div class="stat-pill"><span class="n" id="stat-zones">0</span><span class="l">zones</span></div>
     </div>
   </div>
 
   <div class="controls">
     <div class="controls-row">
       <div class="search-box">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#57605F" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#676E79" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="search" placeholder="Cerca un restaurant, ciutat o especialitat...">
       </div>
       <select id="filter-zona"><option value="">Totes les zones</option></select>
@@ -411,13 +273,15 @@
         <option value="name-asc">Nom (A-Z)</option>
       </select>
       <div class="toggle-chip" id="chollo-toggle">💎 Només chollos</div>
-      <button class="add-btn" id="open-add">+ Afegir restaurant</button>
     </div>
   </div>
 
   <p class="result-count" id="result-count"></p>
   <div class="grid" id="grid"></div>
 </div>
+</div>
+
+<button class="fab" id="open-add" title="Afegir restaurant">+</button>
 
 <div class="overlay" id="overlay">
   <div class="modal">
@@ -474,7 +338,6 @@
     </form>
   </div>
 </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -489,20 +352,13 @@ const supabaseClient = (SUPABASE_URL.startsWith('http'))
   : null;
 
 let allData = [];
-let editingId = null;
 
 function uid() { return 'r' + Date.now() + Math.random().toString(36).slice(2,7); }
-
-function zoneColor(zona) {
-  const idx = ZONES.indexOf(zona);
-  const palette = ['teal','olive','saffron'];
-  return palette[idx % 3] || 'teal';
-}
 
 async function loadData() {
   if (!supabaseClient) {
     document.getElementById('grid').innerHTML =
-      '<div class="empty" style="grid-column:1/-1;"><h3>Falta configurar Supabase</h3>' +
+      '<div class="empty"><h3>Falta configurar Supabase</h3>' +
       '<p>Obre l\'arxiu HTML amb un editor de text i omple SUPABASE_URL i SUPABASE_ANON_KEY ' +
       'a l\'inici del &lt;script&gt;, seguint les instruccions.</p></div>';
     return;
@@ -553,6 +409,8 @@ function showToast(msg) {
 function populateSelects() {
   const fz = document.getElementById('filter-zona');
   const ft = document.getElementById('filter-tipus');
+  fz.innerHTML = '<option value="">Totes les zones</option>';
+  ft.innerHTML = '<option value="">Tots els tipus</option>';
   const zonesNow = [...new Set(allData.map(d => d.zona))].sort();
   const typesNow = [...new Set(allData.map(d => d.tipus))].sort();
   zonesNow.forEach(z => { const o = document.createElement('option'); o.value = z; o.textContent = z; fz.appendChild(o); });
@@ -561,6 +419,7 @@ function populateSelects() {
   const dc = document.getElementById('cities-list');
   const dz = document.getElementById('zones-list');
   const dt = document.getElementById('types-list');
+  dc.innerHTML = ''; dz.innerHTML = ''; dt.innerHTML = '';
   [...new Set(allData.map(d => d.ciutat))].sort().forEach(c => { const o = document.createElement('option'); o.value = c; dc.appendChild(o); });
   zonesNow.forEach(z => { const o = document.createElement('option'); o.value = z; dz.appendChild(o); });
   typesNow.forEach(t => { const o = document.createElement('option'); o.value = t; dt.appendChild(o); });
@@ -568,7 +427,7 @@ function populateSelects() {
 
 function updateStats(filtered) {
   document.getElementById('stat-total').textContent = allData.length;
-  document.getElementById('stat-chollo').textContent = allData.filter(d => d.chollo || (d.google >= 4.6 && d.preu_mig <= 30)).length;
+  document.getElementById('stat-chollo').textContent = allData.filter(isChollo).length;
   document.getElementById('stat-visited').textContent = allData.filter(d => d.visited).length;
   document.getElementById('stat-zones').textContent = new Set(allData.map(d => d.zona)).size;
   const rc = document.getElementById('result-count');
@@ -613,7 +472,7 @@ function render() {
   grid.innerHTML = '';
 
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+    grid.innerHTML = `<div class="empty">
       <h3>Cap resultat</h3>
       <p>Prova amb un altre terme de cerca o treu algun filtre.</p>
     </div>`;
@@ -629,7 +488,7 @@ function render() {
     card.innerHTML = `
       <div class="card-top">
         <h3 class="card-title">${escapeHtml(d.restaurant)}</h3>
-        <div class="stamp"><span class="v">${ratingText}</span><span class="s">GOOGLE</span></div>
+        <div class="rating-badge">★ ${ratingText}</div>
       </div>
       <div class="tag-row">
         <span class="tag zona">${escapeHtml(d.zona)}</span>
@@ -673,7 +532,6 @@ function escapeAttr(s) { return escapeHtml(s); }
 
 function openModal() {
   document.getElementById('restaurant-form').reset();
-  editingId = null;
   document.getElementById('modal-title').textContent = 'Afegir restaurant';
   document.getElementById('overlay').classList.add('show');
 }
@@ -766,6 +624,24 @@ document.getElementById('gate-cancel').addEventListener('click', (e) => {
   e.preventDefault();
   pendingAction = null;
   document.getElementById('gate-overlay').classList.add('hidden');
+});
+
+// ---- Theme toggle ----
+const THEME_KEY = 'restaurants-guia-theme';
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-toggle').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+(function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const preferred = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(preferred);
+})();
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
 });
 
 (async function init() {
