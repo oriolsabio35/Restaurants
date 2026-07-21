@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Llibreta — guia de restaurants</title>
+<title>Paladar — Guia de restaurants a Barcelona i Catalunya</title>
+<meta name="description" content="Descobreix on menjar bé a Barcelona, la Costa Brava i rodalies. Filtra per zona, tipus de cuina i pressupost, amb valoracions reals de Google i preus estimats per persona.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -238,7 +239,7 @@
   <div class="topbar-inner">
     <div class="brand">
       <div class="brand-mark">🍴</div>
-      <div class="brand-name">Llibreta</div>
+      <div class="brand-name">PALADAR</div>
     </div>
     <button class="theme-toggle" id="theme-toggle" title="Canviar tema">🌙</button>
   </div>
@@ -248,8 +249,8 @@
 <div class="wrap">
 
   <div class="hero">
-    <h1>La llibreta de restaurants</h1>
-    <p>Tots els llocs on vull anar, amb valoració de Google i preu estimat per persona.</p>
+    <h1>Paladar</h1>
+    <p>Una guia de restaurants a Barcelona, la Costa Brava i rodalies — amb valoracions reals de Google i preu estimat per persona. Filtra per zona, tipus de cuina o pressupost i troba on menjar bé.</p>
     <div class="stats">
       <div class="stat-pill"><span class="n" id="stat-total">0</span><span class="l">restaurants</span></div>
       <div class="stat-pill"><span class="n" id="stat-chollo">0</span><span class="l">bona relació qualitat-preu</span></div>
@@ -286,7 +287,7 @@
 <div class="overlay" id="overlay">
   <div class="modal">
     <h2 id="modal-title">Afegir restaurant</h2>
-    <p class="modal-sub">Es guardarà automàticament a la teva llibreta.</p>
+    <p class="modal-sub">Es guardarà automàticament a Paladar.</p>
     <form id="restaurant-form">
       <div class="field">
         <label>Nom del restaurant *</label>
@@ -512,7 +513,7 @@ function render() {
     btn.addEventListener('click', (e) => {
       const id = e.target.getAttribute('data-id');
       requireAuth(async () => {
-        if (confirm('Eliminar aquest restaurant de la llibreta?')) {
+        if (confirm('Eliminar aquest restaurant de Paladar?')) {
           const ok = await deleteRestaurant(id);
           if (ok) {
             allData = allData.filter(d => d.id !== id);
@@ -576,7 +577,7 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
   populateSelects();
   closeModal();
   render();
-  showToast(`${inserted.restaurant} afegit a la llibreta`);
+  showToast(`${inserted.restaurant} afegit a Paladar`);
 });
 
 ['search','filter-zona','filter-tipus','sort-by'].forEach(id => {
