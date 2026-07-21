@@ -368,19 +368,20 @@
 </head>
 <body>
 
-<div id="gate-overlay">
+<div id="gate-overlay" class="hidden">
   <div class="gate-box">
-    <h2>🔒 Accés privat</h2>
-    <p>Aquesta llibreta és privada. Escriu la contrasenya per continuar.</p>
+    <h2>🔒 Contrasenya</h2>
+    <p>Cal contrasenya per afegir o eliminar restaurants.</p>
     <form id="gate-form">
       <input type="password" id="gate-password" placeholder="Contrasenya" autocomplete="off">
-      <button type="submit">Entrar</button>
+      <button type="submit">Confirmar</button>
       <div class="gate-error" id="gate-error"></div>
+      <a href="#" id="gate-cancel" style="display:block;margin-top:12px;font-size:13px;color:var(--ink-soft);">Cancel·lar</a>
     </form>
   </div>
 </div>
 
-<div id="app-content" class="hidden">
+<div id="app-content">
 <div class="wrap">
 
   <div class="hero">
@@ -479,7 +480,7 @@
 
 <script>
 // ---- CONFIGURA AQUÍ el teu projecte de Supabase ----
-const SUPABASE_URL ='https://yurbwfrbbvyvehpnjinv.supabase.co';
+const SUPABASE_URL = 'https://yurbwfrbbvyvehpnjinv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1cmJ3ZnJiYnZ5dmVocG5qaW52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NjU5NjcsImV4cCI6MjEwMDA0MTk2N30.RJ9s9idFZsPIqfeoZTHDwoVOoATDGDFK9OLKfLJS3uw';
 // -----------------------------------------------------
 
@@ -649,16 +650,18 @@ function render() {
   });
 
   grid.querySelectorAll('button.del').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
+    btn.addEventListener('click', (e) => {
       const id = e.target.getAttribute('data-id');
-      if (confirm('Eliminar aquest restaurant de la llibreta?')) {
-        const ok = await deleteRestaurant(id);
-        if (ok) {
-          allData = allData.filter(d => d.id !== id);
-          render();
-          showToast('Restaurant eliminat');
+      requireAuth(async () => {
+        if (confirm('Eliminar aquest restaurant de la llibreta?')) {
+          const ok = await deleteRestaurant(id);
+          if (ok) {
+            allData = allData.filter(d => d.id !== id);
+            render();
+            showToast('Restaurant eliminat');
+          }
         }
-      }
+      });
     });
   });
 }
@@ -678,7 +681,7 @@ function closeModal() {
   document.getElementById('overlay').classList.remove('show');
 }
 
-document.getElementById('open-add').addEventListener('click', openModal);
+document.getElementById('open-add').addEventListener('click', () => requireAuth(openModal));
 document.getElementById('cancel-btn').addEventListener('click', closeModal);
 document.getElementById('overlay').addEventListener('click', (e) => {
   if (e.target.id === 'overlay') closeModal();
@@ -727,39 +730,49 @@ document.getElementById('chollo-toggle').addEventListener('click', () => {
   render();
 });
 
-// ---- CONFIGURA AQUÍ la contrasenya d'accés ----
+// ---- CONFIGURA AQUÍ la contrasenya per afegir/eliminar ----
 const SITE_PASSWORD = 'Orisabio5?';
-// ------------------------------------------------
+// -------------------------------------------------------------
 
 const GATE_KEY = 'restaurants-guia-unlocked';
+let pendingAction = null;
 
-async function initApp() {
+function requireAuth(action) {
+  if (localStorage.getItem(GATE_KEY) === 'yes') {
+    action();
+    return;
+  }
+  pendingAction = action;
+  document.getElementById('gate-error').textContent = '';
+  document.getElementById('gate-password').value = '';
+  document.getElementById('gate-overlay').classList.remove('hidden');
+  document.getElementById('gate-password').focus();
+}
+
+document.getElementById('gate-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const val = document.getElementById('gate-password').value;
+  if (val === SITE_PASSWORD) {
+    localStorage.setItem(GATE_KEY, 'yes');
+    document.getElementById('gate-overlay').classList.add('hidden');
+    if (pendingAction) { pendingAction(); pendingAction = null; }
+  } else {
+    document.getElementById('gate-error').textContent = 'Contrasenya incorrecta.';
+    document.getElementById('gate-password').value = '';
+  }
+});
+
+document.getElementById('gate-cancel').addEventListener('click', (e) => {
+  e.preventDefault();
+  pendingAction = null;
   document.getElementById('gate-overlay').classList.add('hidden');
-  document.getElementById('app-content').classList.remove('hidden');
+});
+
+(async function init() {
   await loadData();
   populateSelects();
   render();
-}
-
-function checkGate() {
-  if (localStorage.getItem(GATE_KEY) === 'yes') {
-    initApp();
-    return;
-  }
-  document.getElementById('gate-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const val = document.getElementById('gate-password').value;
-    if (val === SITE_PASSWORD) {
-      localStorage.setItem(GATE_KEY, 'yes');
-      initApp();
-    } else {
-      document.getElementById('gate-error').textContent = 'Contrasenya incorrecta.';
-      document.getElementById('gate-password').value = '';
-    }
-  });
-}
-
-checkGate();
+})();
 </script>
 </body>
 </html>
