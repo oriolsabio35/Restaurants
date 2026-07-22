@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paladar — Guia de restaurants a Barcelona i Catalunya</title>
 <meta name="description" content="Descobreix on menjar bé a Barcelona, la Costa Brava i rodalies. Filtra per zona, tipus de cuina i pressupost, amb valoracions reals de Google i preus estimats per persona.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0E9C93">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Paladar">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -241,7 +248,10 @@
       <div class="brand-mark">🍴</div>
       <div class="brand-name">PALADAR</div>
     </div>
-    <button class="theme-toggle" id="theme-toggle" title="Canviar tema">🌙</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="theme-toggle" id="install-btn" title="Instal·lar l'app" style="display:none;width:auto;border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;color:var(--accent-dark);">📲 Instal·la</button>
+      <button class="theme-toggle" id="theme-toggle" title="Canviar tema">🌙</button>
+    </div>
   </div>
 </div>
 
@@ -650,6 +660,31 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
   populateSelects();
   render();
 })();
+
+// ---- PWA: service worker + install prompt ----
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('install-btn').style.display = 'flex';
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('install-btn').style.display = 'none';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').style.display = 'none';
+  showToast('Paladar instal·lat! 🎉');
+});
 </script>
 </body>
 </html>
