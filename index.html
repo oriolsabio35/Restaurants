@@ -15,16 +15,16 @@
 
 <!-- ---- CONFIGURA AQUÍ la teva URL publicada (per exemple: https://paladar-cat.netlify.app) ---- -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://paladar-cat.netlify.app">
+<meta property="og:url" content="paladar-cat.netlify.app">
 <meta property="og:title" content="Paladar — Guia de restaurants a Barcelona i Catalunya">
 <meta property="og:description" content="Descobreix on menjar bé arreu de Catalunya — Barcelona, Costa Brava i molt més. Filtra per zona, tipus de cuina i pressupost.">
-<meta property="og:image" content="https://paladar-cat.netlify.app/og-image.png">
+<meta property="og:image" content="paladar-cat.netlify.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Paladar — Guia de restaurants a Barcelona i Catalunya">
 <meta name="twitter:description" content="Descobreix on menjar bé arreu de Catalunya — Barcelona, Costa Brava i molt més.">
-<meta name="twitter:image" content="https://paladar-cat.netlify.app/og-image.png">
+<meta name="twitter:image" content="paladar-cat.netlify.app/og-image.png">
 <!-- ------------------------------------------------------------------------------------------- -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -166,6 +166,8 @@
   .tag.zona { background: var(--accent-tint); color: var(--accent-dark); }
   .tag.tipus { background: var(--bg); color: var(--ink-soft); border: 1px solid var(--line); }
   .tag.chollo { background: var(--warn-tint); color: var(--warn); }
+  .tag.visited { background: var(--bg); color: var(--ink-soft); border: 1px solid var(--line); }
+  .tag.favorite { background: var(--danger-tint); color: var(--danger); }
   .esp { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin: 0; min-height: 18px; }
   .obs { font-size: 12px; color: var(--danger); background: var(--danger-tint); padding: 8px 10px; border-radius: var(--radius-sm); margin: 0; line-height: 1.4; }
   .card-foot {
@@ -180,6 +182,11 @@
     background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 0;
   }
   .card-actions button.del { color: var(--danger); }
+  .card-actions button.visit-toggle, .card-actions button.fav-toggle {
+    font-size: 15px; line-height: 1; color: var(--ink-faint); padding: 0 2px;
+  }
+  .card-actions button.visit-toggle:hover { color: var(--accent-dark); }
+  .card-actions button.fav-toggle:hover { color: var(--danger); }
   .empty { text-align: center; padding: 60px 20px; color: var(--ink-soft); grid-column: 1/-1; }
   .empty h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; color: var(--ink); margin: 0 0 8px; }
 
@@ -414,6 +421,20 @@ async function insertRestaurant(entry) {
   return data[0];
 }
 
+async function updateRestaurant(id, patch) {
+  const { data, error } = await supabaseClient
+    .from('restaurants')
+    .update(patch)
+    .eq('id', id)
+    .select();
+  if (error) {
+    console.error(error);
+    showToast('No s\'ha pogut actualitzar.');
+    return null;
+  }
+  return data[0];
+}
+
 async function deleteRestaurant(id) {
   const { error } = await supabaseClient.from('restaurants').delete().eq('id', id);
   if (error) {
@@ -519,6 +540,8 @@ function render() {
         <span class="tag zona">${escapeHtml(d.zona)}</span>
         <span class="tag tipus">${escapeHtml(d.tipus)}</span>
         ${chollo ? '<span class="tag chollo">💎 Chollo</span>' : ''}
+        ${d.visited ? '<span class="tag visited">✓ Visitat</span>' : ''}
+        ${d.favorite ? '<span class="tag favorite">♥ Preferit</span>' : ''}
       </div>
       <p class="esp">${escapeHtml(d.especialitat || '')}</p>
       ${d.observacions ? `<p class="obs">${escapeHtml(d.observacions)}</p>` : ''}
@@ -526,11 +549,43 @@ function render() {
         <div class="price"><b>${priceText}</b> / pers.</div>
         <div class="card-actions">
           ${d.maps_url ? `<a href="${escapeAttr(d.maps_url)}" target="_blank" rel="noopener">Mapa ↗</a>` : ''}
+          <button class="visit-toggle" data-id="${d.id}" title="Marcar com a visitat">${d.visited ? '✓' : '○'}</button>
+          <button class="fav-toggle" data-id="${d.id}" title="Marcar com a preferit">${d.favorite ? '♥' : '♡'}</button>
+          <button class="edit" data-id="${d.id}">Editar</button>
           <button class="del" data-id="${d.id}">Eliminar</button>
         </div>
       </div>
     `;
     grid.appendChild(card);
+  });
+
+  grid.querySelectorAll('button.visit-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.target.getAttribute('data-id');
+      requireAuth(async () => {
+        const d = allData.find(x => x.id === id);
+        const ok = await updateRestaurant(id, { visited: !d.visited });
+        if (ok) { d.visited = !d.visited; render(); }
+      });
+    });
+  });
+
+  grid.querySelectorAll('button.fav-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.target.getAttribute('data-id');
+      requireAuth(async () => {
+        const d = allData.find(x => x.id === id);
+        const ok = await updateRestaurant(id, { favorite: !d.favorite });
+        if (ok) { d.favorite = !d.favorite; render(); }
+      });
+    });
+  });
+
+  grid.querySelectorAll('button.edit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.target.getAttribute('data-id');
+      requireAuth(() => openModal(allData.find(x => x.id === id)));
+    });
   });
 
   grid.querySelectorAll('button.del').forEach(btn => {
@@ -555,16 +610,36 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return escapeHtml(s); }
 
-function openModal() {
+let editingId = null;
+
+function openModal(existing) {
   document.getElementById('restaurant-form').reset();
-  document.getElementById('modal-title').textContent = 'Afegir restaurant';
+  if (existing) {
+    editingId = existing.id;
+    document.getElementById('modal-title').textContent = 'Editar restaurant';
+    document.getElementById('save-btn').textContent = 'Actualitzar restaurant';
+    document.getElementById('f-restaurant').value = existing.restaurant || '';
+    document.getElementById('f-ciutat').value = existing.ciutat || '';
+    document.getElementById('f-zona').value = existing.zona || '';
+    document.getElementById('f-tipus').value = existing.tipus || '';
+    document.getElementById('f-especialitat').value = existing.especialitat || '';
+    document.getElementById('f-google').value = existing.google ?? '';
+    document.getElementById('f-preu').value = existing.preu_mig ?? '';
+    document.getElementById('f-maps').value = existing.maps_url || '';
+    document.getElementById('f-obs').value = existing.observacions || '';
+  } else {
+    editingId = null;
+    document.getElementById('modal-title').textContent = 'Afegir restaurant';
+    document.getElementById('save-btn').textContent = 'Desar restaurant';
+  }
   document.getElementById('overlay').classList.add('show');
 }
 function closeModal() {
   document.getElementById('overlay').classList.remove('show');
+  editingId = null;
 }
 
-document.getElementById('open-add').addEventListener('click', () => requireAuth(openModal));
+document.getElementById('open-add').addEventListener('click', () => requireAuth(() => openModal()));
 document.getElementById('cancel-btn').addEventListener('click', closeModal);
 document.getElementById('overlay').addEventListener('click', (e) => {
   if (e.target.id === 'overlay') closeModal();
@@ -573,7 +648,7 @@ document.getElementById('overlay').addEventListener('click', (e) => {
 document.getElementById('restaurant-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const saveBtn = document.getElementById('save-btn');
-  const newEntry = {
+  const formData = {
     restaurant: document.getElementById('f-restaurant').value.trim(),
     ciutat: document.getElementById('f-ciutat').value.trim(),
     zona: document.getElementById('f-zona').value.trim(),
@@ -584,24 +659,36 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
     preu: document.getElementById('f-preu').value ? `${document.getElementById('f-preu').value}€/pers. (estimat)` : '',
     maps_url: document.getElementById('f-maps').value.trim() || null,
     observacions: document.getElementById('f-obs').value.trim(),
-    chollo: false,
-    visited: false,
-    favorite: false,
   };
-  if (!newEntry.restaurant || !newEntry.ciutat || !newEntry.zona || !newEntry.tipus) return;
+  if (!formData.restaurant || !formData.ciutat || !formData.zona || !formData.tipus) return;
 
   saveBtn.disabled = true;
-  saveBtn.textContent = 'Desant...';
-  const inserted = await insertRestaurant(newEntry);
-  saveBtn.disabled = false;
-  saveBtn.textContent = 'Desar restaurant';
-  if (!inserted) return;
 
-  allData.unshift(inserted);
-  populateSelects();
-  closeModal();
-  render();
-  showToast(`${inserted.restaurant} afegit a Paladar`);
+  if (editingId) {
+    saveBtn.textContent = 'Actualitzant...';
+    const updated = await updateRestaurant(editingId, formData);
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Actualitzar restaurant';
+    if (!updated) return;
+    const idx = allData.findIndex(d => d.id === editingId);
+    if (idx !== -1) allData[idx] = updated;
+    populateSelects();
+    closeModal();
+    render();
+    showToast(`${updated.restaurant} actualitzat`);
+  } else {
+    saveBtn.textContent = 'Desant...';
+    const newEntry = { ...formData, chollo: false, visited: false, favorite: false };
+    const inserted = await insertRestaurant(newEntry);
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Desar restaurant';
+    if (!inserted) return;
+    allData.unshift(inserted);
+    populateSelects();
+    closeModal();
+    render();
+    showToast(`${inserted.restaurant} afegit a Paladar`);
+  }
 });
 
 ['search','filter-zona','filter-tipus','sort-by'].forEach(id => {
