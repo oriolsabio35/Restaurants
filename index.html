@@ -288,6 +288,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <button class="theme-toggle" id="install-btn" title="Instal·lar l'app" style="display:none;width:auto;border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;color:var(--accent-dark);">📲 Instal·la</button>
+      <button class="theme-toggle" id="backup-btn" title="Descarregar còpia de seguretat" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;">💾</button>
       <button class="theme-toggle" id="theme-toggle" title="Canviar tema">🌙</button>
     </div>
   </div>
@@ -777,6 +778,23 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
   const next = current === 'dark' ? 'light' : 'dark';
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
+});
+
+// ---- Còpia de seguretat ----
+document.getElementById('backup-btn').addEventListener('click', () => {
+  if (!allData.length) { showToast('Encara no hi ha dades carregades.'); return; }
+  const dataStr = JSON.stringify(allData, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const today = new Date().toISOString().slice(0, 10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `paladar-backup-${today}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Còpia de seguretat descarregada (${allData.length} restaurants)`);
 });
 
 (async function init() {
