@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://paladar-cat.netlify.app/sitemap.xml
