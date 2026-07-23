@@ -15,16 +15,16 @@
 
 <!-- ---- CONFIGURA AQUÍ la teva URL publicada (per exemple: https://paladar-cat.netlify.app) ---- -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="paladar-cat.netlify.app">
+<meta property="og:url" content="https://paladar-cat.netlify.app">
 <meta property="og:title" content="Paladar — Guia de restaurants a Barcelona i Catalunya">
 <meta property="og:description" content="Descobreix on menjar bé arreu de Catalunya — Barcelona, Costa Brava i molt més. Filtra per zona, tipus de cuina i pressupost.">
-<meta property="og:image" content="paladar-cat.netlify.app/og-image.png">
+<meta property="og:image" content="https://paladar-cat.netlify.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Paladar — Guia de restaurants a Barcelona i Catalunya">
 <meta name="twitter:description" content="Descobreix on menjar bé arreu de Catalunya — Barcelona, Costa Brava i molt més.">
-<meta name="twitter:image" content="paladar-cat.netlify.app/og-image.png">
+<meta name="twitter:image" content="https://paladar-cat.netlify.app/og-image.png">
 <!-- ------------------------------------------------------------------------------------------- -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -230,6 +230,23 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ---------- iOS install banner ---------- */
+  .ios-banner {
+    position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 250;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+    max-width: 460px; margin: 0 auto;
+  }
+  .ios-banner.hidden { display: none; }
+  .ios-banner-icon { font-size: 22px; flex-shrink: 0; }
+  .ios-banner-text { font-size: 13px; color: var(--ink); line-height: 1.4; flex: 1; }
+  .ios-banner-text strong { color: var(--accent-dark); }
+  #ios-banner-close {
+    background: none; border: none; color: var(--ink-faint); font-size: 15px; cursor: pointer;
+    padding: 4px; flex-shrink: 0;
+  }
+
   /* ---------- Password gate ---------- */
   #gate-overlay { position: fixed; inset: 0; background: rgba(10,12,15,0.55); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
   #gate-overlay.hidden { display: none; }
@@ -372,6 +389,12 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="ios-install-banner" class="ios-banner hidden">
+  <span class="ios-banner-icon">📲</span>
+  <span class="ios-banner-text">Instal·la Paladar: toca <strong>Compartir</strong> ⬆️ i després <strong>"Afegeix a pantalla d'inici"</strong>.</span>
+  <button id="ios-banner-close" aria-label="Tancar">✕</button>
+</div>
 
 <script>
 // ---- CONFIGURA AQUÍ el teu projecte de Supabase ----
@@ -786,6 +809,22 @@ window.addEventListener('appinstalled', () => {
   document.getElementById('install-btn').style.display = 'none';
   showToast('Paladar instal·lat! 🎉');
 });
+
+// ---- iOS install banner (no native prompt exists on iOS Safari) ----
+(function iosInstallBanner() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  const dismissed = localStorage.getItem('paladar-ios-banner-dismissed') === 'yes';
+
+  if (isIOS && !isStandalone && !dismissed) {
+    document.getElementById('ios-install-banner').classList.remove('hidden');
+  }
+  document.getElementById('ios-banner-close').addEventListener('click', () => {
+    document.getElementById('ios-install-banner').classList.add('hidden');
+    localStorage.setItem('paladar-ios-banner-dismissed', 'yes');
+  });
+})();
 </script>
 </body>
 </html>
