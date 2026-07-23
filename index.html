@@ -782,19 +782,21 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 
 // ---- Còpia de seguretat ----
 document.getElementById('backup-btn').addEventListener('click', () => {
-  if (!allData.length) { showToast('Encara no hi ha dades carregades.'); return; }
-  const dataStr = JSON.stringify(allData, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const today = new Date().toISOString().slice(0, 10);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `paladar-backup-${today}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast(`Còpia de seguretat descarregada (${allData.length} restaurants)`);
+  requireAuth(() => {
+    if (!allData.length) { showToast('Encara no hi ha dades carregades.'); return; }
+    const dataStr = JSON.stringify(allData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const today = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `paladar-backup-${today}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`Còpia de seguretat descarregada (${allData.length} restaurants)`);
+  });
 });
 
 (async function init() {
