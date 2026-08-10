@@ -269,13 +269,13 @@
 
 <div id="gate-overlay" class="hidden">
   <div class="gate-box">
-    <h2>🔒 Contrasenya</h2>
-    <p>Cal contrasenya per afegir o eliminar restaurants.</p>
+    <h2 data-i18n="gateTitle">🔒 Contrasenya</h2>
+    <p data-i18n="gateDesc">Cal contrasenya per afegir o eliminar restaurants.</p>
     <form id="gate-form">
-      <input type="password" id="gate-password" placeholder="Contrasenya" autocomplete="off">
-      <button type="submit">Confirmar</button>
+      <input type="password" id="gate-password" data-i18n-placeholder="gatePasswordPlaceholder" placeholder="Contrasenya" autocomplete="off">
+      <button type="submit" data-i18n="gateConfirm">Confirmar</button>
       <div class="gate-error" id="gate-error"></div>
-      <a href="#" id="gate-cancel" style="display:block;margin-top:12px;font-size:13px;color:var(--ink-soft);">Cancel·lar</a>
+      <a href="#" id="gate-cancel" data-i18n="cancel" style="display:block;margin-top:12px;font-size:13px;color:var(--ink-soft);">Cancel·lar</a>
     </form>
   </div>
 </div>
@@ -287,9 +287,10 @@
       <div class="brand-name">PALADAR</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <button class="theme-toggle" id="install-btn" title="Instal·lar l'app" style="display:none;width:auto;border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;color:var(--accent-dark);">📲 Instal·la</button>
-      <button class="theme-toggle" id="backup-btn" title="Descarregar còpia de seguretat" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;">💾</button>
-      <button class="theme-toggle" id="theme-toggle" title="Canviar tema">🌙</button>
+      <button class="theme-toggle" id="install-btn" data-i18n-title="installTitle" title="Instal·lar l'app" style="display:none;width:auto;border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;color:var(--accent-dark);"><span data-i18n="installBtn">📲 Instal·la</span></button>
+      <button class="theme-toggle" id="backup-btn" data-i18n-title="backupTitle" title="Descarregar còpia de seguretat" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;">💾</button>
+      <button class="theme-toggle" id="lang-toggle" title="Canviar idioma" style="width:auto;border-radius:999px;padding:0 12px;font-size:13px;font-weight:700;">ES</button>
+      <button class="theme-toggle" id="theme-toggle" data-i18n-title="themeTitle" title="Canviar tema">🌙</button>
     </div>
   </div>
 </div>
@@ -299,12 +300,12 @@
 
   <div class="hero">
     <h1>Paladar</h1>
-    <p>Una guia de restaurants arreu de Catalunya — Barcelona, Costa Brava i molt més — amb valoracions reals de Google i preu estimat per persona. Filtra per zona, tipus de cuina o pressupost i troba on menjar bé.</p>
+    <p data-i18n="heroSubtitle">Una guia de restaurants arreu de Catalunya — Barcelona, Costa Brava i molt més — amb valoracions reals de Google i preu estimat per persona. Filtra per zona, tipus de cuina o pressupost i troba on menjar bé.</p>
     <div class="stats">
-      <div class="stat-pill"><span class="n" id="stat-total">0</span><span class="l">restaurants</span></div>
-      <div class="stat-pill"><span class="n" id="stat-chollo">0</span><span class="l">bona relació qualitat-preu</span></div>
-      <div class="stat-pill"><span class="n" id="stat-visited">0</span><span class="l">visitats</span></div>
-      <div class="stat-pill"><span class="n" id="stat-zones">0</span><span class="l">zones</span></div>
+      <div class="stat-pill"><span class="n" id="stat-total">0</span><span class="l" data-i18n="statRestaurants">restaurants</span></div>
+      <div class="stat-pill"><span class="n" id="stat-chollo">0</span><span class="l" data-i18n="statValue">bona relació qualitat-preu</span></div>
+      <div class="stat-pill"><span class="n" id="stat-visited">0</span><span class="l" data-i18n="statVisited">visitats</span></div>
+      <div class="stat-pill"><span class="n" id="stat-zones">0</span><span class="l" data-i18n="statZones">zones</span></div>
     </div>
   </div>
 
@@ -312,17 +313,17 @@
     <div class="controls-row">
       <div class="search-box">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#676E79" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="search" placeholder="Cerca un restaurant, ciutat o especialitat...">
+        <input type="text" id="search" data-i18n-placeholder="searchPlaceholder" placeholder="Cerca un restaurant, ciutat o especialitat...">
       </div>
-      <select id="filter-zona"><option value="">Totes les zones</option></select>
-      <select id="filter-tipus"><option value="">Tots els tipus</option></select>
+      <select id="filter-zona"><option value="" data-i18n="allZones">Totes les zones</option></select>
+      <select id="filter-tipus"><option value="" data-i18n="allTypes">Tots els tipus</option></select>
       <select id="sort-by">
-        <option value="google-desc">Millor valorats</option>
-        <option value="price-asc">Preu: de menys a més</option>
-        <option value="price-desc">Preu: de més a menys</option>
-        <option value="name-asc">Nom (A-Z)</option>
+        <option value="google-desc" data-i18n="sortBest">Millor valorats</option>
+        <option value="price-asc" data-i18n="sortPriceAsc">Preu: de menys a més</option>
+        <option value="price-desc" data-i18n="sortPriceDesc">Preu: de més a menys</option>
+        <option value="name-asc" data-i18n="sortName">Nom (A-Z)</option>
       </select>
-      <div class="toggle-chip" id="chollo-toggle">💎 Només chollos</div>
+      <div class="toggle-chip" id="chollo-toggle" data-i18n="cholloToggle">💎 Només chollos</div>
     </div>
   </div>
 
@@ -331,59 +332,59 @@
 </div>
 </div>
 
-<button class="fab" id="open-add" title="Afegir restaurant">+</button>
+<button class="fab" id="open-add" data-i18n-title="addTitle" title="Afegir restaurant">+</button>
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2 id="modal-title">Afegir restaurant</h2>
-    <p class="modal-sub">Es guardarà automàticament a Paladar.</p>
+    <h2 id="modal-title" data-i18n="modalAddTitle">Afegir restaurant</h2>
+    <p class="modal-sub" data-i18n="modalSub">Es guardarà automàticament a Paladar.</p>
     <form id="restaurant-form">
       <div class="field">
-        <label>Nom del restaurant *</label>
-        <input type="text" id="f-restaurant" required placeholder="Ex: Can Culleretes">
+        <label data-i18n="labelName">Nom del restaurant *</label>
+        <input type="text" id="f-restaurant" required data-i18n-placeholder="phName" placeholder="Ex: Can Culleretes">
       </div>
       <div class="field-row">
         <div class="field">
-          <label>Ciutat *</label>
-          <input type="text" id="f-ciutat" required placeholder="Ex: Barcelona" list="cities-list">
+          <label data-i18n="labelCity">Ciutat *</label>
+          <input type="text" id="f-ciutat" required data-i18n-placeholder="phCity" placeholder="Ex: Barcelona" list="cities-list">
           <datalist id="cities-list"></datalist>
         </div>
         <div class="field">
-          <label>Zona *</label>
-          <input type="text" id="f-zona" required placeholder="Ex: Barcelona ciutat" list="zones-list">
+          <label data-i18n="labelZone">Zona *</label>
+          <input type="text" id="f-zona" required data-i18n-placeholder="phZone" placeholder="Ex: Barcelona ciutat" list="zones-list">
           <datalist id="zones-list"></datalist>
         </div>
       </div>
       <div class="field">
-        <label>Tipus de cuina *</label>
-        <input type="text" id="f-tipus" required placeholder="Ex: Italià" list="types-list">
+        <label data-i18n="labelType">Tipus de cuina *</label>
+        <input type="text" id="f-tipus" required data-i18n-placeholder="phType" placeholder="Ex: Italià" list="types-list">
         <datalist id="types-list"></datalist>
       </div>
       <div class="field">
-        <label>Especialitat / plat recomanat</label>
-        <input type="text" id="f-especialitat" placeholder="Ex: Pasta fresca casolana">
+        <label data-i18n="labelSpecialty">Especialitat / plat recomanat</label>
+        <input type="text" id="f-especialitat" data-i18n-placeholder="phSpecialty" placeholder="Ex: Pasta fresca casolana">
       </div>
       <div class="field-row">
         <div class="field">
-          <label>Valoració Google (0-5)</label>
+          <label data-i18n="labelRating">Valoració Google (0-5)</label>
           <input type="number" id="f-google" step="0.1" min="0" max="5" placeholder="4.5">
         </div>
         <div class="field">
-          <label>Preu mitjà (€/pers.)</label>
+          <label data-i18n="labelPrice">Preu mitjà (€/pers.)</label>
           <input type="number" id="f-preu" step="1" min="0" placeholder="35">
         </div>
       </div>
       <div class="field">
-        <label>Enllaç de Google Maps</label>
+        <label data-i18n="labelMaps">Enllaç de Google Maps</label>
         <input type="url" id="f-maps" placeholder="https://maps.google.com/...">
       </div>
       <div class="field">
-        <label>Observacions</label>
-        <textarea id="f-obs" placeholder="Notes, avisos, coses a tenir en compte..."></textarea>
+        <label data-i18n="labelObs">Observacions</label>
+        <textarea id="f-obs" data-i18n-placeholder="phObs" placeholder="Notes, avisos, coses a tenir en compte..."></textarea>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="cancel-btn">Cancel·lar</button>
-        <button type="submit" class="btn-primary" id="save-btn">Desar restaurant</button>
+        <button type="button" class="btn-secondary" id="cancel-btn" data-i18n="cancel">Cancel·lar</button>
+        <button type="submit" class="btn-primary" id="save-btn" data-i18n="saveBtn">Desar restaurant</button>
       </div>
     </form>
   </div>
@@ -393,7 +394,7 @@
 
 <div id="ios-install-banner" class="ios-banner hidden">
   <span class="ios-banner-icon">📲</span>
-  <span class="ios-banner-text">Instal·la Paladar: toca <strong>Compartir</strong> ⬆️ i després <strong>"Afegeix a pantalla d'inici"</strong>.</span>
+  <span class="ios-banner-text" data-i18n-html="iosBannerText">Instal·la Paladar: toca <strong>Compartir</strong> ⬆️ i després <strong>"Afegeix a pantalla d'inici"</strong>.</span>
   <button id="ios-banner-close" aria-label="Tancar">✕</button>
 </div>
 
@@ -409,14 +410,190 @@ const supabaseClient = (SUPABASE_URL.startsWith('http'))
 
 let allData = [];
 
+// ---- Traduccions ----
+const I18N = {
+  ca: {
+    gateTitle: '🔒 Contrasenya',
+    gateDesc: 'Cal contrasenya per afegir o eliminar restaurants.',
+    gatePasswordPlaceholder: 'Contrasenya',
+    gateConfirm: 'Confirmar',
+    gateWrong: 'Contrasenya incorrecta.',
+    cancel: 'Cancel·lar',
+    installTitle: "Instal·lar l'app",
+    installBtn: '📲 Instal·la',
+    backupTitle: 'Descarregar còpia de seguretat',
+    themeTitle: 'Canviar tema',
+    heroSubtitle: 'Una guia de restaurants arreu de Catalunya — Barcelona, Costa Brava i molt més — amb valoracions reals de Google i preu estimat per persona. Filtra per zona, tipus de cuina o pressupost i troba on menjar bé.',
+    statRestaurants: 'restaurants',
+    statValue: 'bona relació qualitat-preu',
+    statVisited: 'visitats',
+    statZones: 'zones',
+    searchPlaceholder: 'Cerca un restaurant, ciutat o especialitat...',
+    allZones: 'Totes les zones',
+    allTypes: 'Tots els tipus',
+    sortBest: 'Millor valorats',
+    sortPriceAsc: 'Preu: de menys a més',
+    sortPriceDesc: 'Preu: de més a menys',
+    sortName: 'Nom (A-Z)',
+    cholloToggle: '💎 Només chollos',
+    resultAll: (n) => `Mostrant els ${n} restaurants`,
+    resultFiltered: (n, total) => `${n} de ${total} restaurants`,
+    addTitle: 'Afegir restaurant',
+    modalAddTitle: 'Afegir restaurant',
+    modalEditTitle: 'Editar restaurant',
+    modalSub: 'Es guardarà automàticament a Paladar.',
+    labelName: 'Nom del restaurant *',
+    phName: 'Ex: Can Culleretes',
+    labelCity: 'Ciutat *',
+    phCity: 'Ex: Barcelona',
+    labelZone: 'Zona *',
+    phZone: 'Ex: Barcelona ciutat',
+    labelType: 'Tipus de cuina *',
+    phType: 'Ex: Italià',
+    labelSpecialty: 'Especialitat / plat recomanat',
+    phSpecialty: 'Ex: Pasta fresca casolana',
+    labelRating: 'Valoració Google (0-5)',
+    labelPrice: 'Preu mitjà (€/pers.)',
+    labelMaps: 'Enllaç de Google Maps',
+    labelObs: 'Observacions',
+    phObs: 'Notes, avisos, coses a tenir en compte...',
+    saveBtn: 'Desar restaurant',
+    updateBtn: 'Actualitzar restaurant',
+    saving: 'Desant...',
+    updating: 'Actualitzant...',
+    iosBannerText: 'Instal·la Paladar: toca <strong>Compartir</strong> ⬆️ i després <strong>"Afegeix a pantalla d\'inici"</strong>.',
+    mapLink: 'Mapa ↗',
+    visitTitle: 'Marcar com a visitat',
+    favTitle: 'Marcar com a preferit',
+    editBtn: 'Editar',
+    delBtn: 'Eliminar',
+    tagChollo: '💎 Chollo',
+    tagVisited: '✓ Visitat',
+    tagFavorite: '♥ Preferit',
+    emptyTitle: 'Cap resultat',
+    emptyText: 'Prova amb un altre terme de cerca o treu algun filtre.',
+    confirmDelete: 'Eliminar aquest restaurant de Paladar?',
+    toastNoData: 'Encara no hi ha dades carregades.',
+    toastBackup: (n) => `Còpia de seguretat descarregada (${n} restaurants)`,
+    toastLoadError: 'No s\'han pogut carregar les dades.',
+    toastSaveError: 'No s\'ha pogut desar. Revisa la connexió.',
+    toastUpdateError: 'No s\'ha pogut actualitzar.',
+    toastDeleteError: 'No s\'ha pogut eliminar.',
+    toastDeleted: 'Restaurant eliminat',
+    toastUpdated: (name) => `${name} actualitzat`,
+    toastAdded: (name) => `${name} afegit a Paladar`,
+    toastInstalled: 'Paladar instal·lat! 🎉',
+    supabaseMissingTitle: 'Falta configurar Supabase',
+    supabaseMissingText: 'Obre l\'arxiu HTML amb un editor de text i omple SUPABASE_URL i SUPABASE_ANON_KEY a l\'inici del &lt;script&gt;, seguint les instruccions.',
+  },
+  es: {
+    gateTitle: '🔒 Contraseña',
+    gateDesc: 'Se necesita contraseña para añadir o eliminar restaurantes.',
+    gatePasswordPlaceholder: 'Contraseña',
+    gateConfirm: 'Confirmar',
+    gateWrong: 'Contraseña incorrecta.',
+    cancel: 'Cancelar',
+    installTitle: 'Instalar la app',
+    installBtn: '📲 Instalar',
+    backupTitle: 'Descargar copia de seguridad',
+    themeTitle: 'Cambiar tema',
+    heroSubtitle: 'Una guía de restaurantes por toda Catalunya — Barcelona, Costa Brava y mucho más — con valoraciones reales de Google y precio estimado por persona. Filtra por zona, tipo de cocina o presupuesto y encuentra dónde comer bien.',
+    statRestaurants: 'restaurantes',
+    statValue: 'buena relación calidad-precio',
+    statVisited: 'visitados',
+    statZones: 'zonas',
+    searchPlaceholder: 'Busca un restaurante, ciudad o especialidad...',
+    allZones: 'Todas las zonas',
+    allTypes: 'Todos los tipos',
+    sortBest: 'Mejor valorados',
+    sortPriceAsc: 'Precio: de menos a más',
+    sortPriceDesc: 'Precio: de más a menos',
+    sortName: 'Nombre (A-Z)',
+    cholloToggle: '💎 Solo chollos',
+    resultAll: (n) => `Mostrando los ${n} restaurantes`,
+    resultFiltered: (n, total) => `${n} de ${total} restaurantes`,
+    addTitle: 'Añadir restaurante',
+    modalAddTitle: 'Añadir restaurante',
+    modalEditTitle: 'Editar restaurante',
+    modalSub: 'Se guardará automáticamente en Paladar.',
+    labelName: 'Nombre del restaurante *',
+    phName: 'Ej: Can Culleretes',
+    labelCity: 'Ciudad *',
+    phCity: 'Ej: Barcelona',
+    labelZone: 'Zona *',
+    phZone: 'Ej: Barcelona ciudad',
+    labelType: 'Tipo de cocina *',
+    phType: 'Ej: Italiana',
+    labelSpecialty: 'Especialidad / plato recomendado',
+    phSpecialty: 'Ej: Pasta fresca casera',
+    labelRating: 'Valoración Google (0-5)',
+    labelPrice: 'Precio medio (€/pers.)',
+    labelMaps: 'Enlace de Google Maps',
+    labelObs: 'Observaciones',
+    phObs: 'Notas, avisos, cosas a tener en cuenta...',
+    saveBtn: 'Guardar restaurante',
+    updateBtn: 'Actualizar restaurante',
+    saving: 'Guardando...',
+    updating: 'Actualizando...',
+    iosBannerText: 'Instala Paladar: toca <strong>Compartir</strong> ⬆️ y luego <strong>"Añadir a pantalla de inicio"</strong>.',
+    mapLink: 'Mapa ↗',
+    visitTitle: 'Marcar como visitado',
+    favTitle: 'Marcar como favorito',
+    editBtn: 'Editar',
+    delBtn: 'Eliminar',
+    tagChollo: '💎 Chollo',
+    tagVisited: '✓ Visitado',
+    tagFavorite: '♥ Favorito',
+    emptyTitle: 'Sin resultados',
+    emptyText: 'Prueba con otro término de búsqueda o quita algún filtro.',
+    confirmDelete: '¿Eliminar este restaurante de Paladar?',
+    toastNoData: 'Todavía no hay datos cargados.',
+    toastBackup: (n) => `Copia de seguridad descargada (${n} restaurantes)`,
+    toastLoadError: 'No se han podido cargar los datos.',
+    toastSaveError: 'No se ha podido guardar. Revisa la conexión.',
+    toastUpdateError: 'No se ha podido actualizar.',
+    toastDeleteError: 'No se ha podido eliminar.',
+    toastDeleted: 'Restaurante eliminado',
+    toastUpdated: (name) => `${name} actualizado`,
+    toastAdded: (name) => `${name} añadido a Paladar`,
+    toastInstalled: '¡Paladar instalado! 🎉',
+    supabaseMissingTitle: 'Falta configurar Supabase',
+    supabaseMissingText: 'Abre el archivo HTML con un editor de texto y rellena SUPABASE_URL y SUPABASE_ANON_KEY al inicio del &lt;script&gt;, siguiendo las instrucciones.',
+  }
+};
+
+const LANG_KEY = 'paladar-lang';
+let currentLang = localStorage.getItem(LANG_KEY) || (navigator.language.startsWith('es') ? 'es' : 'ca');
+
+function t(key, ...args) {
+  const entry = I18N[currentLang][key];
+  return typeof entry === 'function' ? entry(...args) : entry;
+}
+
+function applyStaticI18n() {
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.getAttribute('data-i18n-html'));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.getAttribute('data-i18n-title'));
+  });
+  document.getElementById('lang-toggle').textContent = currentLang === 'ca' ? 'ES' : 'CA';
+}
+
 function uid() { return 'r' + Date.now() + Math.random().toString(36).slice(2,7); }
 
 async function loadData() {
   if (!supabaseClient) {
     document.getElementById('grid').innerHTML =
-      '<div class="empty"><h3>Falta configurar Supabase</h3>' +
-      '<p>Obre l\'arxiu HTML amb un editor de text i omple SUPABASE_URL i SUPABASE_ANON_KEY ' +
-      'a l\'inici del &lt;script&gt;, seguint les instruccions.</p></div>';
+      `<div class="empty"><h3>${t('supabaseMissingTitle')}</h3>` +
+      `<p>${t('supabaseMissingText')}</p></div>`;
     return;
   }
   const { data, error } = await supabaseClient
@@ -425,7 +602,7 @@ async function loadData() {
     .order('restaurant', { ascending: true });
   if (error) {
     console.error(error);
-    showToast('No s\'han pogut carregar les dades.');
+    showToast(t('toastLoadError'));
     allData = [];
     return;
   }
@@ -439,7 +616,7 @@ async function insertRestaurant(entry) {
     .select();
   if (error) {
     console.error(error);
-    showToast('No s\'ha pogut desar. Revisa la connexió.');
+    showToast(t('toastSaveError'));
     return null;
   }
   return data[0];
@@ -453,7 +630,7 @@ async function updateRestaurant(id, patch) {
     .select();
   if (error) {
     console.error(error);
-    showToast('No s\'ha pogut actualitzar.');
+    showToast(t('toastUpdateError'));
     return null;
   }
   return data[0];
@@ -463,7 +640,7 @@ async function deleteRestaurant(id) {
   const { error } = await supabaseClient.from('restaurants').delete().eq('id', id);
   if (error) {
     console.error(error);
-    showToast('No s\'ha pogut eliminar.');
+    showToast(t('toastDeleteError'));
     return false;
   }
   return true;
@@ -479,8 +656,8 @@ function showToast(msg) {
 function populateSelects() {
   const fz = document.getElementById('filter-zona');
   const ft = document.getElementById('filter-tipus');
-  fz.innerHTML = '<option value="">Totes les zones</option>';
-  ft.innerHTML = '<option value="">Tots els tipus</option>';
+  fz.innerHTML = `<option value="">${t('allZones')}</option>`;
+  ft.innerHTML = `<option value="">${t('allTypes')}</option>`;
   const zonesNow = [...new Set(allData.map(d => d.zona))].sort();
   const typesNow = [...new Set(allData.map(d => d.tipus))].sort();
   zonesNow.forEach(z => { const o = document.createElement('option'); o.value = z; o.textContent = z; fz.appendChild(o); });
@@ -502,8 +679,8 @@ function updateStats(filtered) {
   document.getElementById('stat-zones').textContent = new Set(allData.map(d => d.zona)).size;
   const rc = document.getElementById('result-count');
   rc.textContent = filtered.length === allData.length
-    ? `Mostrant els ${filtered.length} restaurants`
-    : `${filtered.length} de ${allData.length} restaurants`;
+    ? t('resultAll', filtered.length)
+    : t('resultFiltered', filtered.length, allData.length);
 }
 
 function isChollo(d) {
@@ -543,8 +720,8 @@ function render() {
 
   if (filtered.length === 0) {
     grid.innerHTML = `<div class="empty">
-      <h3>Cap resultat</h3>
-      <p>Prova amb un altre terme de cerca o treu algun filtre.</p>
+      <h3>${t('emptyTitle')}</h3>
+      <p>${t('emptyText')}</p>
     </div>`;
     return;
   }
@@ -563,20 +740,20 @@ function render() {
       <div class="tag-row">
         <span class="tag zona">${escapeHtml(d.zona)}</span>
         <span class="tag tipus">${escapeHtml(d.tipus)}</span>
-        ${chollo ? '<span class="tag chollo">💎 Chollo</span>' : ''}
-        ${d.visited ? '<span class="tag visited">✓ Visitat</span>' : ''}
-        ${d.favorite ? '<span class="tag favorite">♥ Preferit</span>' : ''}
+        ${chollo ? `<span class="tag chollo">${t('tagChollo')}</span>` : ''}
+        ${d.visited ? `<span class="tag visited">${t('tagVisited')}</span>` : ''}
+        ${d.favorite ? `<span class="tag favorite">${t('tagFavorite')}</span>` : ''}
       </div>
       <p class="esp">${escapeHtml(d.especialitat || '')}</p>
       ${d.observacions ? `<p class="obs">${escapeHtml(d.observacions)}</p>` : ''}
       <div class="card-foot">
         <div class="price"><b>${priceText}</b> / pers.</div>
         <div class="card-actions">
-          ${d.maps_url ? `<a href="${escapeAttr(d.maps_url)}" target="_blank" rel="noopener">Mapa ↗</a>` : ''}
-          <button class="visit-toggle" data-id="${d.id}" title="Marcar com a visitat">${d.visited ? '✓' : '○'}</button>
-          <button class="fav-toggle" data-id="${d.id}" title="Marcar com a preferit">${d.favorite ? '♥' : '♡'}</button>
-          <button class="edit" data-id="${d.id}">Editar</button>
-          <button class="del" data-id="${d.id}">Eliminar</button>
+          ${d.maps_url ? `<a href="${escapeAttr(d.maps_url)}" target="_blank" rel="noopener">${t('mapLink')}</a>` : ''}
+          <button class="visit-toggle" data-id="${d.id}" title="${t('visitTitle')}">${d.visited ? '✓' : '○'}</button>
+          <button class="fav-toggle" data-id="${d.id}" title="${t('favTitle')}">${d.favorite ? '♥' : '♡'}</button>
+          <button class="edit" data-id="${d.id}">${t('editBtn')}</button>
+          <button class="del" data-id="${d.id}">${t('delBtn')}</button>
         </div>
       </div>
     `;
@@ -616,12 +793,12 @@ function render() {
     btn.addEventListener('click', (e) => {
       const id = e.target.getAttribute('data-id');
       requireAuth(async () => {
-        if (confirm('Eliminar aquest restaurant de Paladar?')) {
+        if (confirm(t('confirmDelete'))) {
           const ok = await deleteRestaurant(id);
           if (ok) {
             allData = allData.filter(d => d.id !== id);
             render();
-            showToast('Restaurant eliminat');
+            showToast(t('toastDeleted'));
           }
         }
       });
@@ -640,8 +817,8 @@ function openModal(existing) {
   document.getElementById('restaurant-form').reset();
   if (existing) {
     editingId = existing.id;
-    document.getElementById('modal-title').textContent = 'Editar restaurant';
-    document.getElementById('save-btn').textContent = 'Actualitzar restaurant';
+    document.getElementById('modal-title').textContent = t('modalEditTitle');
+    document.getElementById('save-btn').textContent = t('updateBtn');
     document.getElementById('f-restaurant').value = existing.restaurant || '';
     document.getElementById('f-ciutat').value = existing.ciutat || '';
     document.getElementById('f-zona').value = existing.zona || '';
@@ -653,8 +830,8 @@ function openModal(existing) {
     document.getElementById('f-obs').value = existing.observacions || '';
   } else {
     editingId = null;
-    document.getElementById('modal-title').textContent = 'Afegir restaurant';
-    document.getElementById('save-btn').textContent = 'Desar restaurant';
+    document.getElementById('modal-title').textContent = t('modalAddTitle');
+    document.getElementById('save-btn').textContent = t('saveBtn');
   }
   document.getElementById('overlay').classList.add('show');
 }
@@ -689,29 +866,29 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
   saveBtn.disabled = true;
 
   if (editingId) {
-    saveBtn.textContent = 'Actualitzant...';
+    saveBtn.textContent = t('updating');
     const updated = await updateRestaurant(editingId, formData);
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Actualitzar restaurant';
+    saveBtn.textContent = t('updateBtn');
     if (!updated) return;
     const idx = allData.findIndex(d => d.id === editingId);
     if (idx !== -1) allData[idx] = updated;
     populateSelects();
     closeModal();
     render();
-    showToast(`${updated.restaurant} actualitzat`);
+    showToast(t('toastUpdated', updated.restaurant));
   } else {
-    saveBtn.textContent = 'Desant...';
+    saveBtn.textContent = t('saving');
     const newEntry = { ...formData, chollo: false, visited: false, favorite: false };
     const inserted = await insertRestaurant(newEntry);
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Desar restaurant';
+    saveBtn.textContent = t('saveBtn');
     if (!inserted) return;
     allData.unshift(inserted);
     populateSelects();
     closeModal();
     render();
-    showToast(`${inserted.restaurant} afegit a Paladar`);
+    showToast(t('toastAdded', inserted.restaurant));
   }
 });
 
@@ -751,7 +928,7 @@ document.getElementById('gate-form').addEventListener('submit', (e) => {
     document.getElementById('gate-overlay').classList.add('hidden');
     if (pendingAction) { pendingAction(); pendingAction = null; }
   } else {
-    document.getElementById('gate-error').textContent = 'Contrasenya incorrecta.';
+    document.getElementById('gate-error').textContent = t('gateWrong');
     document.getElementById('gate-password').value = '';
   }
 });
@@ -760,6 +937,15 @@ document.getElementById('gate-cancel').addEventListener('click', (e) => {
   e.preventDefault();
   pendingAction = null;
   document.getElementById('gate-overlay').classList.add('hidden');
+});
+
+// ---- Idioma ----
+document.getElementById('lang-toggle').addEventListener('click', () => {
+  currentLang = currentLang === 'ca' ? 'es' : 'ca';
+  localStorage.setItem(LANG_KEY, currentLang);
+  applyStaticI18n();
+  populateSelects();
+  render();
 });
 
 // ---- Theme toggle ----
@@ -783,7 +969,7 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 // ---- Còpia de seguretat ----
 document.getElementById('backup-btn').addEventListener('click', () => {
   requireAuth(() => {
-    if (!allData.length) { showToast('Encara no hi ha dades carregades.'); return; }
+    if (!allData.length) { showToast(t('toastNoData')); return; }
     const dataStr = JSON.stringify(allData, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -795,11 +981,12 @@ document.getElementById('backup-btn').addEventListener('click', () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast(`Còpia de seguretat descarregada (${allData.length} restaurants)`);
+    showToast(t('toastBackup', allData.length));
   });
 });
 
 (async function init() {
+  applyStaticI18n();
   await loadData();
   populateSelects();
   render();
@@ -827,7 +1014,7 @@ document.getElementById('install-btn').addEventListener('click', async () => {
 });
 window.addEventListener('appinstalled', () => {
   document.getElementById('install-btn').style.display = 'none';
-  showToast('Paladar instal·lat! 🎉');
+  showToast(t('toastInstalled'));
 });
 
 // ---- iOS install banner (no native prompt exists on iOS Safari) ----
