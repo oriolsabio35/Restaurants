@@ -199,6 +199,11 @@
     display: flex; align-items: center; justify-content: center;
   }
   .fab:hover { background: var(--accent-dark); }
+  .fab-suggest {
+    left: 22px; right: auto; width: 50px; height: 50px; font-size: 21px;
+    background: var(--warn); box-shadow: 0 10px 30px rgba(245,158,11,0.35);
+  }
+  .fab-suggest:hover { background: #D98C0E; }
 
   /* ---------- Modal ---------- */
   .overlay {
@@ -262,6 +267,7 @@
     .controls-row { flex-direction: column; align-items: stretch; }
     select, .toggle-chip { width: 100%; }
     .fab { right: 16px; bottom: 16px; }
+    .fab-suggest { left: 16px; right: auto; }
   }
 </style>
 </head>
@@ -289,6 +295,7 @@
     <div style="display:flex;align-items:center;gap:8px;">
       <button class="theme-toggle" id="install-btn" data-i18n-title="installTitle" title="Instal·lar l'app" style="display:none;width:auto;border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;color:var(--accent-dark);"><span data-i18n="installBtn">📲 Instal·la</span></button>
       <button class="theme-toggle" id="backup-btn" data-i18n-title="backupTitle" title="Descarregar còpia de seguretat" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;">💾</button>
+      <button class="theme-toggle" id="review-btn" data-i18n-title="reviewBtnTitle" title="Suggeriments pendents" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;position:relative;">📥<span id="review-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:999px;font-size:10px;font-weight:800;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px;"></span></button>
       <select id="lang-select" title="Canviar idioma" style="width:auto;border-radius:999px;padding:6px 26px 6px 12px;font-size:13px;font-weight:700;border:1px solid var(--line);background-color:var(--paper);color:var(--ink);">
         <option value="ca">CA</option>
         <option value="es">ES</option>
@@ -337,6 +344,7 @@
 </div>
 
 <button class="fab" id="open-add" data-i18n-title="addTitle" title="Afegir restaurant">+</button>
+<button class="fab fab-suggest" id="open-suggest" data-i18n-title="suggestTitle" title="Suggerir un restaurant">💡</button>
 
 <div class="overlay" id="overlay">
   <div class="modal">
@@ -391,6 +399,46 @@
         <button type="submit" class="btn-primary" id="save-btn" data-i18n="saveBtn">Desar restaurant</button>
       </div>
     </form>
+  </div>
+</div>
+
+<div class="overlay" id="suggest-overlay">
+  <div class="modal">
+    <h2 data-i18n="suggestModalTitle">Suggerir un restaurant</h2>
+    <p class="modal-sub" data-i18n="suggestModalSub">L'afegirem a la llista de suggeriments per revisar-lo.</p>
+    <form id="suggest-form">
+      <div class="field">
+        <label data-i18n="labelName">Nom del restaurant *</label>
+        <input type="text" id="s-restaurant" required data-i18n-placeholder="phName" placeholder="Ex: Can Culleretes">
+      </div>
+      <div class="field">
+        <label data-i18n="labelCity">Ciutat</label>
+        <input type="text" id="s-ciutat" data-i18n-placeholder="phCity" placeholder="Ex: Barcelona">
+      </div>
+      <div class="field">
+        <label data-i18n="suggestLabelComment">Per què el recomanes?</label>
+        <textarea id="s-comment" data-i18n-placeholder="suggestPhComment" placeholder="Ex: Fan una paella boníssima i no és car"></textarea>
+      </div>
+      <div class="field">
+        <label data-i18n="suggestLabelContact">El teu nom o contacte (opcional)</label>
+        <input type="text" id="s-contact" data-i18n-placeholder="suggestPhContact" placeholder="Per si vols que t'ho agraeixi">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="suggest-cancel-btn" data-i18n="cancel">Cancel·lar</button>
+        <button type="submit" class="btn-primary" id="suggest-save-btn" data-i18n="suggestSendBtn">Enviar suggeriment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="review-overlay">
+  <div class="modal" style="max-width:640px;">
+    <h2 data-i18n="reviewTitle">Suggeriments pendents</h2>
+    <p class="modal-sub" data-i18n="reviewSub">Restaurants que ha suggerit la gent que visita Paladar.</p>
+    <div id="review-list" style="max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px;"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="review-close-btn" data-i18n="cancel">Cancel·lar</button>
+    </div>
   </div>
 </div>
 
@@ -489,6 +537,25 @@ const I18N = {
     toastInstalled: 'Paladar instal·lat! 🎉',
     supabaseMissingTitle: 'Falta configurar Supabase',
     supabaseMissingText: 'Obre l\'arxiu HTML amb un editor de text i omple SUPABASE_URL i SUPABASE_ANON_KEY a l\'inici del &lt;script&gt;, seguint les instruccions.',
+    suggestTitle: 'Suggerir un restaurant',
+    suggestModalTitle: 'Suggerir un restaurant',
+    suggestModalSub: 'L\'afegirem a la llista de suggeriments per revisar-lo.',
+    suggestLabelComment: 'Per què el recomanes?',
+    suggestPhComment: 'Ex: Fan una paella boníssima i no és car',
+    suggestLabelContact: 'El teu nom o contacte (opcional)',
+    suggestPhContact: 'Per si vols que t\'ho agraeixi',
+    suggestSendBtn: 'Enviar suggeriment',
+    suggestSending: 'Enviant...',
+    suggestSent: 'Gràcies! Hem rebut el teu suggeriment 🙌',
+    suggestError: 'No s\'ha pogut enviar. Torna-ho a provar.',
+    reviewBtnTitle: 'Suggeriments pendents',
+    reviewTitle: 'Suggeriments pendents',
+    reviewSub: 'Restaurants que ha suggerit la gent que visita Paladar.',
+    reviewEmpty: 'No hi ha cap suggeriment pendent.',
+    reviewAddBtn: 'Afegir',
+    reviewDismissBtn: 'Descartar',
+    reviewDismissConfirm: 'Descartar aquest suggeriment?',
+    reviewNoComment: 'Sense comentari',
   },
   es: {
     gateTitle: '🔒 Contraseña',
@@ -563,6 +630,25 @@ const I18N = {
     toastInstalled: '¡Paladar instalado! 🎉',
     supabaseMissingTitle: 'Falta configurar Supabase',
     supabaseMissingText: 'Abre el archivo HTML con un editor de texto y rellena SUPABASE_URL y SUPABASE_ANON_KEY al inicio del &lt;script&gt;, siguiendo las instrucciones.',
+    suggestTitle: 'Sugerir un restaurante',
+    suggestModalTitle: 'Sugerir un restaurante',
+    suggestModalSub: 'Lo añadiremos a la lista de sugerencias para revisarlo.',
+    suggestLabelComment: '¿Por qué lo recomiendas?',
+    suggestPhComment: 'Ej: Hacen una paella buenísima y no es caro',
+    suggestLabelContact: 'Tu nombre o contacto (opcional)',
+    suggestPhContact: 'Por si quieres que te lo agradezca',
+    suggestSendBtn: 'Enviar sugerencia',
+    suggestSending: 'Enviando...',
+    suggestSent: '¡Gracias! Hemos recibido tu sugerencia 🙌',
+    suggestError: 'No se ha podido enviar. Vuelve a intentarlo.',
+    reviewBtnTitle: 'Sugerencias pendientes',
+    reviewTitle: 'Sugerencias pendientes',
+    reviewSub: 'Restaurantes que ha sugerido la gente que visita Paladar.',
+    reviewEmpty: 'No hay ninguna sugerencia pendiente.',
+    reviewAddBtn: 'Añadir',
+    reviewDismissBtn: 'Descartar',
+    reviewDismissConfirm: '¿Descartar esta sugerencia?',
+    reviewNoComment: 'Sin comentario',
   },
   en: {
     gateTitle: '🔒 Password',
@@ -637,6 +723,25 @@ const I18N = {
     toastInstalled: 'Paladar installed! 🎉',
     supabaseMissingTitle: 'Supabase setup needed',
     supabaseMissingText: 'Open the HTML file with a text editor and fill in SUPABASE_URL and SUPABASE_ANON_KEY at the start of the &lt;script&gt;, following the instructions.',
+    suggestTitle: 'Suggest a restaurant',
+    suggestModalTitle: 'Suggest a restaurant',
+    suggestModalSub: "We'll add it to the suggestions list for review.",
+    suggestLabelComment: 'Why do you recommend it?',
+    suggestPhComment: "E.g.: They make an amazing paella and it's not expensive",
+    suggestLabelContact: 'Your name or contact (optional)',
+    suggestPhContact: "In case you'd like a thank you",
+    suggestSendBtn: 'Send suggestion',
+    suggestSending: 'Sending...',
+    suggestSent: 'Thanks! We received your suggestion 🙌',
+    suggestError: 'Could not send. Please try again.',
+    reviewBtnTitle: 'Pending suggestions',
+    reviewTitle: 'Pending suggestions',
+    reviewSub: "Restaurants suggested by people visiting Paladar.",
+    reviewEmpty: 'No pending suggestions.',
+    reviewAddBtn: 'Add',
+    reviewDismissBtn: 'Dismiss',
+    reviewDismissConfirm: 'Dismiss this suggestion?',
+    reviewNoComment: 'No comment',
   }
 };
 
@@ -729,6 +834,27 @@ async function deleteRestaurant(id) {
     return false;
   }
   return true;
+}
+
+async function insertSuggestion(entry) {
+  const { data, error } = await supabaseClient.from('suggestions').insert([entry]).select();
+  if (error) { console.error(error); return null; }
+  return data[0];
+}
+
+async function loadPendingSuggestions() {
+  const { data, error } = await supabaseClient
+    .from('suggestions')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data;
+}
+
+async function deleteSuggestion(id) {
+  const { error } = await supabaseClient.from('suggestions').delete().eq('id', id);
+  return !error;
 }
 
 function showToast(msg) {
@@ -1076,11 +1202,121 @@ document.getElementById('backup-btn').addEventListener('click', () => {
   });
 });
 
+// ---- Suggeriments públics ----
+function openSuggestModal() {
+  document.getElementById('suggest-form').reset();
+  document.getElementById('suggest-overlay').classList.add('show');
+}
+function closeSuggestModal() {
+  document.getElementById('suggest-overlay').classList.remove('show');
+}
+document.getElementById('open-suggest').addEventListener('click', openSuggestModal);
+document.getElementById('suggest-cancel-btn').addEventListener('click', closeSuggestModal);
+document.getElementById('suggest-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'suggest-overlay') closeSuggestModal();
+});
+
+document.getElementById('suggest-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('suggest-save-btn');
+  const entry = {
+    restaurant: document.getElementById('s-restaurant').value.trim(),
+    ciutat: document.getElementById('s-ciutat').value.trim(),
+    comment: document.getElementById('s-comment').value.trim(),
+    contact: document.getElementById('s-contact').value.trim(),
+    status: 'pending',
+  };
+  if (!entry.restaurant) return;
+  btn.disabled = true;
+  btn.textContent = t('suggestSending');
+  const inserted = await insertSuggestion(entry);
+  btn.disabled = false;
+  btn.textContent = t('suggestSendBtn');
+  if (!inserted) { showToast(t('suggestError')); return; }
+  closeSuggestModal();
+  showToast(t('suggestSent'));
+  refreshSuggestionBadge();
+});
+
+// ---- Panell de revisió (protegit) ----
+async function refreshSuggestionBadge() {
+  if (!supabaseClient) return;
+  const pending = await loadPendingSuggestions();
+  const badge = document.getElementById('review-badge');
+  if (pending.length > 0) {
+    badge.textContent = pending.length;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+async function renderReviewList() {
+  const list = document.getElementById('review-list');
+  list.innerHTML = '...';
+  const pending = await loadPendingSuggestions();
+  if (pending.length === 0) {
+    list.innerHTML = `<p style="color:var(--ink-soft);font-size:14px;">${t('reviewEmpty')}</p>`;
+    return;
+  }
+  list.innerHTML = '';
+  pending.forEach(s => {
+    const row = document.createElement('div');
+    row.style.cssText = 'border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;';
+    const date = new Date(s.created_at).toLocaleDateString(currentLang === 'ca' ? 'ca-ES' : currentLang === 'es' ? 'es-ES' : 'en-GB');
+    row.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <strong>${escapeHtml(s.restaurant)}</strong>
+        <span style="font-size:12px;color:var(--ink-faint);">${date}</span>
+      </div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">${escapeHtml(s.ciutat || '')}</div>
+      <p style="font-size:13.5px;margin:8px 0;">${escapeHtml(s.comment || t('reviewNoComment'))}</p>
+      ${s.contact ? `<div style="font-size:12px;color:var(--ink-faint);">— ${escapeHtml(s.contact)}</div>` : ''}
+      <div style="display:flex;gap:14px;margin-top:8px;">
+        <button class="review-add" data-id="${s.id}" data-name="${escapeAttr(s.restaurant)}" data-city="${escapeAttr(s.ciutat || '')}" style="font-size:13px;font-weight:700;color:var(--accent-dark);background:none;border:none;cursor:pointer;">${t('reviewAddBtn')}</button>
+        <button class="review-dismiss" data-id="${s.id}" style="font-size:13px;font-weight:700;color:var(--danger);background:none;border:none;cursor:pointer;">${t('reviewDismissBtn')}</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll('.review-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('review-overlay').classList.remove('show');
+      openModal();
+      document.getElementById('f-restaurant').value = btn.getAttribute('data-name');
+      document.getElementById('f-ciutat').value = btn.getAttribute('data-city');
+    });
+  });
+  list.querySelectorAll('.review-dismiss').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm(t('reviewDismissConfirm'))) return;
+      await deleteSuggestion(btn.getAttribute('data-id'));
+      renderReviewList();
+      refreshSuggestionBadge();
+    });
+  });
+}
+
+document.getElementById('review-btn').addEventListener('click', () => {
+  requireAuth(() => {
+    document.getElementById('review-overlay').classList.add('show');
+    renderReviewList();
+  });
+});
+document.getElementById('review-close-btn').addEventListener('click', () => {
+  document.getElementById('review-overlay').classList.remove('show');
+});
+document.getElementById('review-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'review-overlay') document.getElementById('review-overlay').classList.remove('show');
+});
+
 (async function init() {
   applyStaticI18n();
   await loadData();
   populateSelects();
   render();
+  refreshSuggestionBadge();
 })();
 
 // ---- PWA: service worker + install prompt ----
