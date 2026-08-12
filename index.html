@@ -289,7 +289,11 @@
     <div style="display:flex;align-items:center;gap:8px;">
       <button class="theme-toggle" id="install-btn" data-i18n-title="installTitle" title="Instal·lar l'app" style="display:none;width:auto;border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;color:var(--accent-dark);"><span data-i18n="installBtn">📲 Instal·la</span></button>
       <button class="theme-toggle" id="backup-btn" data-i18n-title="backupTitle" title="Descarregar còpia de seguretat" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;">💾</button>
-      <button class="theme-toggle" id="lang-toggle" title="Canviar idioma" style="width:auto;border-radius:999px;padding:0 12px;font-size:13px;font-weight:700;">ES</button>
+      <select id="lang-select" title="Canviar idioma" style="width:auto;border-radius:999px;padding:6px 26px 6px 12px;font-size:13px;font-weight:700;border:1px solid var(--line);background-color:var(--paper);color:var(--ink);">
+        <option value="ca">CA</option>
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+      </select>
       <button class="theme-toggle" id="theme-toggle" data-i18n-title="themeTitle" title="Canviar tema">🌙</button>
     </div>
   </div>
@@ -559,11 +563,92 @@ const I18N = {
     toastInstalled: '¡Paladar instalado! 🎉',
     supabaseMissingTitle: 'Falta configurar Supabase',
     supabaseMissingText: 'Abre el archivo HTML con un editor de texto y rellena SUPABASE_URL y SUPABASE_ANON_KEY al inicio del &lt;script&gt;, siguiendo las instrucciones.',
+  },
+  en: {
+    gateTitle: '🔒 Password',
+    gateDesc: 'A password is required to add or remove restaurants.',
+    gatePasswordPlaceholder: 'Password',
+    gateConfirm: 'Confirm',
+    gateWrong: 'Incorrect password.',
+    cancel: 'Cancel',
+    installTitle: 'Install the app',
+    installBtn: '📲 Install',
+    backupTitle: 'Download backup',
+    themeTitle: 'Switch theme',
+    heroSubtitle: 'A restaurant guide across Catalonia — Barcelona, the Costa Brava and much more — with real Google ratings and estimated price per person. Filter by area, cuisine or budget and find somewhere great to eat.',
+    statRestaurants: 'restaurants',
+    statValue: 'good value for money',
+    statVisited: 'visited',
+    statZones: 'areas',
+    searchPlaceholder: 'Search a restaurant, city or specialty...',
+    allZones: 'All areas',
+    allTypes: 'All cuisines',
+    sortBest: 'Top rated',
+    sortPriceAsc: 'Price: low to high',
+    sortPriceDesc: 'Price: high to low',
+    sortName: 'Name (A-Z)',
+    cholloToggle: '💎 Best value only',
+    resultAll: (n) => `Showing all ${n} restaurants`,
+    resultFiltered: (n, total) => `${n} of ${total} restaurants`,
+    addTitle: 'Add restaurant',
+    modalAddTitle: 'Add restaurant',
+    modalEditTitle: 'Edit restaurant',
+    modalSub: 'This will be saved automatically to Paladar.',
+    labelName: 'Restaurant name *',
+    phName: 'E.g.: Can Culleretes',
+    labelCity: 'City *',
+    phCity: 'E.g.: Barcelona',
+    labelZone: 'Area *',
+    phZone: 'E.g.: Barcelona city',
+    labelType: 'Cuisine type *',
+    phType: 'E.g.: Italian',
+    labelSpecialty: 'Specialty / recommended dish',
+    phSpecialty: 'E.g.: Homemade fresh pasta',
+    labelRating: 'Google rating (0-5)',
+    labelPrice: 'Average price (€/person)',
+    labelMaps: 'Google Maps link',
+    labelObs: 'Notes',
+    phObs: 'Notes, warnings, things to keep in mind...',
+    saveBtn: 'Save restaurant',
+    updateBtn: 'Update restaurant',
+    saving: 'Saving...',
+    updating: 'Updating...',
+    iosBannerText: 'Install Paladar: tap <strong>Share</strong> ⬆️ then <strong>"Add to Home Screen"</strong>.',
+    mapLink: 'Map ↗',
+    visitTitle: 'Mark as visited',
+    favTitle: 'Mark as favorite',
+    editBtn: 'Edit',
+    delBtn: 'Delete',
+    tagChollo: '💎 Best value',
+    tagVisited: '✓ Visited',
+    tagFavorite: '♥ Favorite',
+    emptyTitle: 'No results',
+    emptyText: 'Try a different search term or remove a filter.',
+    confirmDelete: 'Delete this restaurant from Paladar?',
+    toastNoData: 'No data loaded yet.',
+    toastBackup: (n) => `Backup downloaded (${n} restaurants)`,
+    toastLoadError: 'Could not load the data.',
+    toastSaveError: 'Could not save. Check your connection.',
+    toastUpdateError: 'Could not update.',
+    toastDeleteError: 'Could not delete.',
+    toastDeleted: 'Restaurant deleted',
+    toastUpdated: (name) => `${name} updated`,
+    toastAdded: (name) => `${name} added to Paladar`,
+    toastInstalled: 'Paladar installed! 🎉',
+    supabaseMissingTitle: 'Supabase setup needed',
+    supabaseMissingText: 'Open the HTML file with a text editor and fill in SUPABASE_URL and SUPABASE_ANON_KEY at the start of the &lt;script&gt;, following the instructions.',
   }
 };
 
 const LANG_KEY = 'paladar-lang';
-let currentLang = localStorage.getItem(LANG_KEY) || (navigator.language.startsWith('es') ? 'es' : 'ca');
+function detectDefaultLang() {
+  const nav = navigator.language || '';
+  if (nav.startsWith('es')) return 'es';
+  if (nav.startsWith('ca')) return 'ca';
+  if (nav.startsWith('en')) return 'en';
+  return 'ca';
+}
+let currentLang = localStorage.getItem(LANG_KEY) || detectDefaultLang();
 
 function t(key, ...args) {
   const entry = I18N[currentLang][key];
@@ -584,7 +669,7 @@ function applyStaticI18n() {
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     el.title = t(el.getAttribute('data-i18n-title'));
   });
-  document.getElementById('lang-toggle').textContent = currentLang === 'ca' ? 'ES' : 'CA';
+  document.getElementById('lang-select').value = currentLang;
 }
 
 function uid() { return 'r' + Date.now() + Math.random().toString(36).slice(2,7); }
@@ -687,6 +772,12 @@ function isChollo(d) {
   return d.google != null && d.preu_mig != null && d.google >= 4.6 && d.preu_mig <= 30;
 }
 
+function localizedField(d, base) {
+  if (currentLang === 'es') return d[base + '_es'] || d[base] || '';
+  if (currentLang === 'en') return d[base + '_en'] || d[base] || '';
+  return d[base] || '';
+}
+
 function render() {
   const q = document.getElementById('search').value.trim().toLowerCase();
   const fz = document.getElementById('filter-zona').value;
@@ -699,7 +790,7 @@ function render() {
     if (ft && d.tipus !== ft) return false;
     if (cholloOnly && !isChollo(d)) return false;
     if (q) {
-      const hay = `${d.restaurant} ${d.ciutat} ${d.especialitat} ${d.tipus}`.toLowerCase();
+      const hay = `${d.restaurant} ${d.ciutat} ${d.especialitat} ${d.especialitat_es || ''} ${d.especialitat_en || ''} ${d.tipus}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -744,8 +835,8 @@ function render() {
         ${d.visited ? `<span class="tag visited">${t('tagVisited')}</span>` : ''}
         ${d.favorite ? `<span class="tag favorite">${t('tagFavorite')}</span>` : ''}
       </div>
-      <p class="esp">${escapeHtml(d.especialitat || '')}</p>
-      ${d.observacions ? `<p class="obs">${escapeHtml(d.observacions)}</p>` : ''}
+      <p class="esp">${escapeHtml(localizedField(d, 'especialitat'))}</p>
+      ${localizedField(d, 'observacions') ? `<p class="obs">${escapeHtml(localizedField(d, 'observacions'))}</p>` : ''}
       <div class="card-foot">
         <div class="price"><b>${priceText}</b> / pers.</div>
         <div class="card-actions">
@@ -940,8 +1031,8 @@ document.getElementById('gate-cancel').addEventListener('click', (e) => {
 });
 
 // ---- Idioma ----
-document.getElementById('lang-toggle').addEventListener('click', () => {
-  currentLang = currentLang === 'ca' ? 'es' : 'ca';
+document.getElementById('lang-select').addEventListener('change', (e) => {
+  currentLang = e.target.value;
   localStorage.setItem(LANG_KEY, currentLang);
   applyStaticI18n();
   populateSelects();
