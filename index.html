@@ -681,7 +681,7 @@ const I18N = {
     addTitle: 'Add restaurant',
     modalAddTitle: 'Add restaurant',
     modalEditTitle: 'Edit restaurant',
-    modalSub: 'This will be saved automatically to Paladar.',
+    modalSub: "This will be saved automatically to Paladar.",
     labelName: 'Restaurant name *',
     phName: 'E.g.: Can Culleretes',
     labelCity: 'City *',
@@ -780,11 +780,10 @@ async function loadData() {
   }
   allData = data;
   
-  // Geocodificació automàtica en segon pla per als que no tinguin lat/lon
-  autoGeocodeMissing();
+  // Geocodificació automàtica
+  await autoGeocodeMissing();
 }
 
-// Funció automàtica per trobar lat/lon sense molestar l'usuari
 async function autoGeocodeMissing() {
   for (let d of allData) {
     if (!d.lat || !d.lon) {
@@ -795,14 +794,12 @@ async function autoGeocodeMissing() {
         if (json && json.length > 0) {
           d.lat = parseFloat(json[0].lat);
           d.lon = parseFloat(json[0].lon);
-          // Opcional: Actualitzar a Supabase de fons perquè ja ho porti guardat
           await supabaseClient.from('restaurants').update({ lat: d.lat, lon: d.lon }).eq('id', d.id);
         }
-      } catch (err) {
-        // Silenciós si falla la connexió
-      }
+      } catch (err) {}
     }
   }
+  // Actualitzar marcadors un cop processats
   updateMapMarkers(allData);
 }
 
@@ -1065,36 +1062,51 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return escapeHtml(s); }
 
-// ---- MAPA INTERACTIU (Leaflet) ----
+// ---- MAPA INTERACTIU (Leaflet) CORREGIT ----
 function initMap() {
-  if (leafletMap) return;
-  leafletMap = L.map('map-view').setView([41.85, 2.15], 8);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap'
-  }).addTo(leafletMap);
+  if (!leafletMap) {
+    leafletMap = L.map('map-view').setView([41.85, 2.15], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap'
+    }).addTo(leafletMap);
+  }
 }
 
 function updateMapMarkers(filtered) {
   if (!leafletMap) return;
+  
+  // Netejar marcadors anteriors
   leafletMarkers.forEach(m => leafletMap.removeLayer(m));
   leafletMarkers = [];
+
+  const bounds = [];
 
   filtered.forEach(d => {
     if (d.lat && d.lon) {
       const marker = L.marker([d.lat, d.lon]).addTo(leafletMap);
       marker.bindPopup(`<b>${escapeHtml(d.restaurant)}</b><br>${escapeHtml(d.zona)}<br>★ ${d.google || '—'}`);
       leafletMarkers.push(marker);
+      bounds.push([d.lat, d.lon]);
     }
   });
+
+  // Si hi ha pins, ajustar el zoom automàticament per mostrar-los tots
+  if (bounds.length > 0) {
+    leafletMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+  }
 }
 
 document.getElementById('map-toggle-btn').addEventListener('click', () => {
   const mapDiv = document.getElementById('map-view');
-  mapDiv.classList.toggle('show');
-  if (mapDiv.classList.contains('show')) {
+  const isOpen = mapDiv.classList.toggle('show');
+  
+  if (isOpen) {
     initMap();
-    setTimeout(() => leafletMap.invalidateSize(), 200);
+    setTimeout(() => {
+      leafletMap.invalidateSize(); // Força a Leaflet a recalcular mides
+      updateMapMarkers(allData);   // Pinta els marcadors actuals
+    }, 150);
   }
 });
 
@@ -1165,7 +1177,6 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
   let latVal = document.getElementById('f-lat').value ? parseFloat(document.getElementById('f-lat').value) : null;
   let lonVal = document.getElementById('f-lon').value ? parseFloat(document.getElementById('f-lon').value) : null;
 
-  // Si no posa lat/lon manualment, provar de geocodificar-ho abans de desar
   if (!latVal || !lonVal) {
     try {
       const q = encodeURIComponent(`${restaurantName}, ${cityName}, Catalunya`);
@@ -1395,7 +1406,7 @@ async function renderReviewList() {
     });
   });
   list.querySelectorAll('.review-dismiss').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async () =>{
       if (!confirm(t('reviewDismissConfirm'))) return;
       await deleteSuggestion(btn.getAttribute('data-id'));
       renderReviewList();
