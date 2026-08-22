@@ -351,7 +351,7 @@
       <select id="sort-by">
         <option value="google-desc" data-i18n="sortBest">Millor valorats</option>
         <option value="price-asc" data-i18n="sortPriceAsc">Preu: de menys a més</option>
-        <option value="price-desc" data-i18n="sortPriceDesc">Preu: de més a menys</option>
+        <option value="price-desc" data-i18n="sortPriceDesc">Preu: de més a menos</option>
         <option value="name-asc" data-i18n="sortName">Nom (A-Z)</option>
       </select>
       <div class="toggle-chip" id="chollo-toggle" data-i18n="cholloToggle">💎 Només chollos</div>
@@ -410,11 +410,11 @@
       </div>
       <div class="field-row">
         <div class="field">
-          <label>Latitud (per al mapa)</label>
+          <label>Latitud (opcional)</label>
           <input type="number" id="f-lat" step="0.000001" placeholder="41.3851">
         </div>
         <div class="field">
-          <label>Longitud (per al mapa)</label>
+          <label>Longitud (opcional)</label>
           <input type="number" id="f-lon" step="0.000001" placeholder="2.1734">
         </div>
       </div>
@@ -779,6 +779,31 @@ async function loadData() {
     return;
   }
   allData = data;
+  
+  // Geocodificació automàtica en segon pla per als que no tinguin lat/lon
+  autoGeocodeMissing();
+}
+
+// Funció automàtica per trobar lat/lon sense molestar l'usuari
+async function autoGeocodeMissing() {
+  for (let d of allData) {
+    if (!d.lat || !d.lon) {
+      try {
+        const query = encodeURIComponent(`${d.restaurant}, ${d.ciutat}, Catalunya`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`);
+        const json = await res.json();
+        if (json && json.length > 0) {
+          d.lat = parseFloat(json[0].lat);
+          d.lon = parseFloat(json[0].lon);
+          // Opcional: Actualitzar a Supabase de fons perquè ja ho porti guardat
+          await supabaseClient.from('restaurants').update({ lat: d.lat, lon: d.lon }).eq('id', d.id);
+        }
+      } catch (err) {
+        // Silenciós si falla la connexió
+      }
+    }
+  }
+  updateMapMarkers(allData);
 }
 
 async function insertRestaurant(entry) {
@@ -974,7 +999,6 @@ function renderGrid(filtered) {
     grid.appendChild(card);
   });
 
-  // Listeners d'accions
   grid.querySelectorAll('.share-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const name = e.currentTarget.getAttribute('data-name');
@@ -1044,7 +1068,7 @@ function escapeAttr(s) { return escapeHtml(s); }
 // ---- MAPA INTERACTIU (Leaflet) ----
 function initMap() {
   if (leafletMap) return;
-  leafletMap = L.map('map-view').setView([41.85, 2.15], 8); // Centrat a Catalunya
+  leafletMap = L.map('map-view').setView([41.85, 2.15], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '© OpenStreetMap'
@@ -1136,17 +1160,35 @@ document.getElementById('overlay').addEventListener('click', (e) => {
 document.getElementById('restaurant-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const saveBtn = document.getElementById('save-btn');
+  const restaurantName = document.getElementById('f-restaurant').value.trim();
+  const cityName = document.getElementById('f-ciutat').value.trim();
+  let latVal = document.getElementById('f-lat').value ? parseFloat(document.getElementById('f-lat').value) : null;
+  let lonVal = document.getElementById('f-lon').value ? parseFloat(document.getElementById('f-lon').value) : null;
+
+  // Si no posa lat/lon manualment, provar de geocodificar-ho abans de desar
+  if (!latVal || !lonVal) {
+    try {
+      const q = encodeURIComponent(`${restaurantName}, ${cityName}, Catalunya`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`);
+      const json = await res.json();
+      if (json && json.length > 0) {
+        latVal = parseFloat(json[0].lat);
+        lonVal = parseFloat(json[0].lon);
+      }
+    } catch (err) {}
+  }
+
   const formData = {
-    restaurant: document.getElementById('f-restaurant').value.trim(),
-    ciutat: document.getElementById('f-ciutat').value.trim(),
+    restaurant: restaurantName,
+    ciutat: cityName,
     zona: document.getElementById('f-zona').value.trim(),
     tipus: document.getElementById('f-tipus').value.trim(),
     especialitat: document.getElementById('f-especialitat').value.trim(),
     google: document.getElementById('f-google').value ? parseFloat(document.getElementById('f-google').value) : null,
     preu_mig: document.getElementById('f-preu').value ? parseFloat(document.getElementById('f-preu').value) : null,
     preu: document.getElementById('f-preu').value ? `${document.getElementById('f-preu').value}€/pers. (estimat)` : '',
-    lat: document.getElementById('f-lat').value ? parseFloat(document.getElementById('f-lat').value) : null,
-    lon: document.getElementById('f-lon').value ? parseFloat(document.getElementById('f-lon').value) : null,
+    lat: latVal,
+    lon: lonVal,
     maps_url: document.getElementById('f-maps').value.trim() || null,
     observacions: document.getElementById('f-obs').value.trim(),
   };
