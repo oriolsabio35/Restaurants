@@ -146,10 +146,10 @@
   .result-count { font-size: 13.5px; color: var(--ink-faint); margin: 6px 4px 20px; font-weight: 500; }
 
   /* ---------- Vista de Mapa ---------- */
-  #map-view { display: none; width: 100%; height: 60vh; border-radius: var(--radius-lg); border: 1px solid var(--line); margin-bottom: 20px; box-shadow: var(--shadow); z-index: 10; }
+  #map-view { display: none; width: 100%; height: 50vh; border-radius: var(--radius-lg); border: 1px solid var(--line); margin-bottom: 20px; box-shadow: var(--shadow); z-index: 1; }
   #map-view.show { display: block; }
 
-  /* ---------- Grid & Cards ---------- */
+  /* ---------- Grid & Cards (Corregit per a mòbil) ---------- */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
   .card {
     background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
@@ -182,25 +182,27 @@
   
   .card-foot {
     display: flex; justify-content: space-between; align-items: center; margin-top: auto;
-    padding-top: 14px; border-top: 1px solid var(--line);
+    padding-top: 14px; border-top: 1px solid var(--line); gap: 8px; flex-wrap: wrap;
   }
   .price { font-size: 13.5px; color: var(--ink-soft); }
   .price b { color: var(--ink); font-size: 16px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
   
-  .card-actions { display: flex; gap: 10px; align-items: center; }
+  .card-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .card-actions a, .card-actions .share-btn {
-    font-size: 12.5px; font-weight: 700; color: var(--accent-dark); text-decoration: none;
+    font-size: 12px; font-weight: 700; color: var(--accent-dark); text-decoration: none;
     background: var(--accent-tint); padding: 6px 10px; border-radius: 999px; transition: background 0.2s; cursor: pointer; border: none;
+    white-space: nowrap;
   }
   .card-actions a:hover, .card-actions .share-btn:hover { background: var(--accent); color: #fff; }
   
   .card-actions button {
-    background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 0;
+    background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 4px;
+    font-size: 12.5px; font-weight: 600; white-space: nowrap;
   }
-  .card-actions button.del { color: var(--danger); font-size: 13px; font-weight: 600; }
-  .card-actions button.edit { color: var(--ink-soft); font-size: 13px; font-weight: 600; }
-  .card-actions button.visit-toggle { color: var(--accent-dark); font-size: 18px; }
-  .card-actions button.fav-toggle { color: var(--danger); font-size: 18px; }
+  .card-actions button.del { color: var(--danger); }
+  .card-actions button.edit { color: var(--ink-soft); }
+  .card-actions button.visit-toggle { color: var(--accent-dark); font-size: 16px; }
+  .card-actions button.fav-toggle { color: var(--danger); font-size: 16px; }
 
   .empty { text-align: center; padding: 80px 20px; color: var(--ink-soft); grid-column: 1/-1; }
   .empty h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; color: var(--ink); margin: 0 0 10px; }
@@ -355,7 +357,7 @@
         <option value="name-asc" data-i18n="sortName">Nom (A-Z)</option>
       </select>
       <div class="toggle-chip" id="chollo-toggle" data-i18n="cholloToggle">💎 Només chollos</div>
-      <div class="toggle-chip" id="geo-toggle" data-i18n="geoToggle">📍 Cerca propera</div>
+      <div class="toggle-chip" id="geo-toggle" data-i18n="geoToggle">📍 Prop de mi</div>
     </div>
   </div>
 
@@ -779,8 +781,6 @@ async function loadData() {
     return;
   }
   allData = data;
-  
-  // Geocodificació automàtica
   await autoGeocodeMissing();
 }
 
@@ -799,7 +799,6 @@ async function autoGeocodeMissing() {
       } catch (err) {}
     }
   }
-  // Actualitzar marcadors un cop processats
   updateMapMarkers(allData);
 }
 
@@ -1062,7 +1061,7 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return escapeHtml(s); }
 
-// ---- MAPA INTERACTIU (Leaflet) CORREGIT ----
+// ---- MAPA INTERACTIU (Leaflet) ----
 function initMap() {
   if (!leafletMap) {
     leafletMap = L.map('map-view').setView([41.85, 2.15], 8);
@@ -1075,13 +1074,10 @@ function initMap() {
 
 function updateMapMarkers(filtered) {
   if (!leafletMap) return;
-  
-  // Netejar marcadors anteriors
   leafletMarkers.forEach(m => leafletMap.removeLayer(m));
   leafletMarkers = [];
 
   const bounds = [];
-
   filtered.forEach(d => {
     if (d.lat && d.lon) {
       const marker = L.marker([d.lat, d.lon]).addTo(leafletMap);
@@ -1091,9 +1087,8 @@ function updateMapMarkers(filtered) {
     }
   });
 
-  // Si hi ha pins, ajustar el zoom automàticament per mostrar-los tots
   if (bounds.length > 0) {
-    leafletMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    leafletMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
   }
 }
 
@@ -1104,8 +1099,8 @@ document.getElementById('map-toggle-btn').addEventListener('click', () => {
   if (isOpen) {
     initMap();
     setTimeout(() => {
-      leafletMap.invalidateSize(); // Força a Leaflet a recalcular mides
-      updateMapMarkers(allData);   // Pinta els marcadors actuals
+      leafletMap.invalidateSize();
+      updateMapMarkers(allData);
     }, 150);
   }
 });
@@ -1406,7 +1401,7 @@ async function renderReviewList() {
     });
   });
   list.querySelectorAll('.review-dismiss').forEach(btn => {
-    btn.addEventListener('click', async () =>{
+    btn.addEventListener('click', async () => {
       if (!confirm(t('reviewDismissConfirm'))) return;
       await deleteSuggestion(btn.getAttribute('data-id'));
       renderReviewList();
@@ -1453,6 +1448,7 @@ document.getElementById('install-btn').addEventListener('click', async () => {
   deferredInstallPrompt.prompt();
   await deferredInstallPrompt.userChoice;
   deferredInstallPrompt = null;
+  document.getElementById('install-dfn'] = null;
   document.getElementById('install-btn').style.display = 'none';
 });
 window.addEventListener('appinstalled', () => {
