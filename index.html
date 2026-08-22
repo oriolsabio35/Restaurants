@@ -482,12 +482,11 @@ const supabaseClient = (SUPABASE_URL.startsWith('http'))
   : null;
 
 let allData = [];
-let currentFilteredData = []; // NOU: Guarda els resultats filtrats per a la ruleta
+let currentFilteredData = [];
 let userLocation = null;
 let leafletMap = null;
 let leafletMarkers = [];
 
-// NOU: Lògica de preferències locals (Favorits i Visitats)
 const USER_PREFS_KEY = 'paladar-prefs';
 
 function getUserPrefs() {
@@ -508,7 +507,7 @@ function togglePref(type, id) {
     prefs[type].splice(index, 1);
   }
   saveUserPrefs(prefs);
-  render(); // Redibuixa les targetes
+  render();
 }
 
 const I18N = {
@@ -834,7 +833,11 @@ async function updateRestaurant(id, patch) {
     .update(patch)
     .eq('id', id)
     .select();
-  if (error) { console.error(error); showToast(t('toastUpdateError')); return null; }
+  if (error) { 
+    console.error("Error detallat de Supabase:", error); 
+    showToast("Error: " + (error.message || 'No s\'ha pogut actualitzar')); 
+    return null; 
+  }
   return data[0];
 }
 
@@ -869,7 +872,7 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(() => t.classList.remove('show'), 3500);
 }
 
 function populateSelects() {
@@ -895,7 +898,7 @@ function updateStats(filtered) {
   const prefs = getUserPrefs();
   document.getElementById('stat-total').textContent = allData.length;
   document.getElementById('stat-chollo').textContent = allData.filter(isChollo).length;
-  document.getElementById('stat-visited').textContent = prefs.visited.length; // Usa los locales
+  document.getElementById('stat-visited').textContent = prefs.visited.length;
   document.getElementById('stat-zones').textContent = new Set(allData.map(d => d.zona)).size;
   const rc = document.getElementById('result-count');
   rc.textContent = filtered.length === allData.length
@@ -962,7 +965,7 @@ function render() {
     });
   }
 
-  currentFilteredData = filtered; // Guardem per a la ruleta
+  currentFilteredData = filtered;
   updateStats(filtered);
   renderGrid(filtered);
   updateMapMarkers(filtered);
@@ -977,7 +980,6 @@ function renderGrid(filtered) {
     return;
   }
 
-  // Obtenim preferències locals
   const prefs = getUserPrefs();
 
   filtered.forEach(d => {
@@ -988,7 +990,6 @@ function renderGrid(filtered) {
     const priceText = d.preu_mig != null ? `${Math.round(d.preu_mig)}€` : (d.preu || '—');
     const distText = (d._distance !== undefined && d._distance < 99999) ? ` • 📍 ${d._distance.toFixed(1)} km` : '';
     
-    // Verifiquem els estats locals
     const isVisited = prefs.visited.includes(d.id);
     const isFavorite = prefs.favorites.includes(d.id);
 
@@ -1039,7 +1040,6 @@ function renderGrid(filtered) {
     });
   });
 
-  // Guardat en LocalStorage (Ja no crida a Supabase)
   grid.querySelectorAll('button.visit-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
@@ -1047,7 +1047,6 @@ function renderGrid(filtered) {
     });
   });
 
-  // Guardat en LocalStorage (Ja no crida a Supabase)
   grid.querySelectorAll('button.fav-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
@@ -1168,7 +1167,7 @@ function openModal(existing) {
     document.getElementById('f-lat').value = existing.lat ?? '';
     document.getElementById('f-lon').value = existing.lon ?? '';
     document.getElementById('f-maps').value = existing.maps_url || '';
-    document.getElementById('f-tiktok').value = existing.tiktok_url || ''; // TikTok value
+    document.getElementById('f-tiktok').value = existing.tiktok_url || '';
     document.getElementById('f-obs').value = existing.observacions || '';
   } else {
     editingId = null;
@@ -1220,7 +1219,7 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
     lat: latVal,
     lon: lonVal,
     maps_url: document.getElementById('f-maps').value.trim() || null,
-    tiktok_url: document.getElementById('f-tiktok').value.trim() || null, // Guardat de TikTok
+    tiktok_url: document.getElementById('f-tiktok').value.trim() || null,
     observacions: document.getElementById('f-obs').value.trim(),
   };
   if (!formData.restaurant || !formData.ciutat || !formData.zona || !formData.tipus) return;
@@ -1241,7 +1240,6 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
     showToast(t('toastUpdated', updated.restaurant));
   } else {
     saveBtn.textContent = t('saving');
-    // Ja no cal incloure "visited" ni "favorite" a la base de dades
     const newEntry = { ...formData, chollo: false };
     const inserted = await insertRestaurant(newEntry);
     saveBtn.disabled = false;
@@ -1264,12 +1262,10 @@ document.getElementById('chollo-toggle').addEventListener('click', () => {
   render();
 });
 
-// NOU: ESDEVENIMENT DE LA RULETA
 document.getElementById('roulette-btn').addEventListener('click', () => {
   if (currentFilteredData.length > 0) {
     const randomIndex = Math.floor(Math.random() * currentFilteredData.length);
     const result = currentFilteredData[randomIndex];
-    // Mostrem una alerta senzilla (es pot millorar amb un modal custom més endavant)
     alert(`🎲 Paladar et recomana:\n\n🍴 ${result.restaurant}\n📍 ${result.zona}\n🥘 ${result.tipus}\n\nBon profit!`);
   } else {
     showToast(t('emptyTitle'));
