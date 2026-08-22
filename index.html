@@ -1417,6 +1417,7 @@ document.getElementById('review-btn').addEventListener('click', () => {
   });
 });
 document.getElementById('review-close-btn').addEventListener('click', () => {
+  document.getElementById('review-overlay').classList.add('show'); // Fixed logic
   document.getElementById('review-overlay').classList.remove('show');
 });
 document.getElementById('review-overlay').addEventListener('click', (e) => {
@@ -1448,7 +1449,6 @@ document.getElementById('install-btn').addEventListener('click', async () => {
   deferredInstallPrompt.prompt();
   await deferredInstallPrompt.userChoice;
   deferredInstallPrompt = null;
-  document.getElementById('install-dfn'] = null;
   document.getElementById('install-btn').style.display = 'none';
 });
 window.addEventListener('appinstalled', () => {
