@@ -149,7 +149,7 @@
   #map-view { display: none; width: 100%; height: 50vh; border-radius: var(--radius-lg); border: 1px solid var(--line); margin-bottom: 20px; box-shadow: var(--shadow); z-index: 1; }
   #map-view.show { display: block; }
 
-  /* ---------- Grid & Cards (Corregit per a mòbil) ---------- */
+  /* ---------- Grid & Cards ---------- */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
   .card {
     background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
@@ -256,23 +256,6 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ---------- iOS install banner ---------- */
-  .ios-banner {
-    position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 250;
-    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    padding: 14px 18px; display: flex; align-items: center; gap: 12px;
-    max-width: 480px; margin: 0 auto;
-  }
-  .ios-banner.hidden { display: none; }
-  .ios-banner-icon { font-size: 24px; flex-shrink: 0; }
-  .ios-banner-text { font-size: 13.5px; color: var(--ink); line-height: 1.4; flex: 1; }
-  .ios-banner-text strong { color: var(--accent-dark); }
-  #ios-banner-close {
-    background: none; border: none; color: var(--ink-faint); font-size: 16px; cursor: pointer;
-    padding: 4px; flex-shrink: 0;
-  }
-
   /* ---------- Password gate ---------- */
   #gate-overlay { position: fixed; inset: 0; background: rgba(11,15,23,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
   #gate-overlay.hidden { display: none; }
@@ -358,6 +341,7 @@
       </select>
       <div class="toggle-chip" id="chollo-toggle" data-i18n="cholloToggle">💎 Només chollos</div>
       <div class="toggle-chip" id="geo-toggle" data-i18n="geoToggle">📍 Prop de mi</div>
+      <div class="toggle-chip" id="roulette-btn" style="background:var(--ink);color:var(--bg);border-color:var(--ink);">🎲 Tria per mi</div>
     </div>
   </div>
 
@@ -423,6 +407,11 @@
       <div class="field">
         <label data-i18n="labelMaps">Enllaç de Google Maps</label>
         <input type="url" id="f-maps" placeholder="https://maps.google.com/...">
+      </div>
+      <!-- NOU CAMP TIKTOK -->
+      <div class="field">
+        <label data-i18n="labelTikTok">Enllaç de TikTok (opcional)</label>
+        <input type="url" id="f-tiktok" placeholder="https://www.tiktok.com/@...">
       </div>
       <div class="field">
         <label data-i18n="labelObs">Observacions</label>
@@ -493,9 +482,34 @@ const supabaseClient = (SUPABASE_URL.startsWith('http'))
   : null;
 
 let allData = [];
+let currentFilteredData = []; // NOU: Guarda els resultats filtrats per a la ruleta
 let userLocation = null;
 let leafletMap = null;
 let leafletMarkers = [];
+
+// NOU: Lògica de preferències locals (Favorits i Visitats)
+const USER_PREFS_KEY = 'paladar-prefs';
+
+function getUserPrefs() {
+  const prefs = localStorage.getItem(USER_PREFS_KEY);
+  return prefs ? JSON.parse(prefs) : { visited: [], favorites: [] };
+}
+
+function saveUserPrefs(prefs) {
+  localStorage.setItem(USER_PREFS_KEY, JSON.stringify(prefs));
+}
+
+function togglePref(type, id) {
+  const prefs = getUserPrefs();
+  const index = prefs[type].indexOf(id);
+  if (index === -1) {
+    prefs[type].push(id);
+  } else {
+    prefs[type].splice(index, 1);
+  }
+  saveUserPrefs(prefs);
+  render(); // Redibuixa les targetes
+}
 
 const I18N = {
   ca: {
@@ -512,7 +526,7 @@ const I18N = {
     heroSubtitle: 'Una guia de restaurants arreu de Catalunya — Barcelona, Costa Brava i molt més — amb valoracions reals de Google i preu estimat per persona. Filtra per zona, tipus de cuina o pressupost i troba on menjar bé.',
     statRestaurants: 'restaurants',
     statValue: 'bona relació qualitat-preu',
-    statVisited: 'visitats',
+    statVisited: 'visitats (teus)',
     statZones: 'zones',
     searchPlaceholder: 'Cerca un restaurant, ciutat o especialitat...',
     allZones: 'Totes les zones',
@@ -543,6 +557,7 @@ const I18N = {
     labelRating: 'Valoració Google (0-5)',
     labelPrice: 'Preu mitjà (€/pers.)',
     labelMaps: 'Enllaç de Google Maps',
+    labelTikTok: 'Enllaç de TikTok (opcional)',
     labelObs: 'Observacions',
     phObs: 'Notes, avisos, coses a tenir en compte...',
     saveBtn: 'Desar restaurant',
@@ -552,8 +567,8 @@ const I18N = {
     iosBannerText: 'Instal·la Paladar: toca <strong>Compartir</strong> ⬆️ i després <strong>"Afegeix a pantalla d\'inici"</strong>.',
     mapLink: 'Com arribar ↗',
     shareBtn: 'Compartir ↗',
-    visitTitle: 'Marcar com a visitat',
-    favTitle: 'Marcar com a preferit',
+    visitTitle: 'Marcar com a visitat (només per a tu)',
+    favTitle: 'Marcar com a preferit (només per a tu)',
     editBtn: 'Editar',
     delBtn: 'Eliminar',
     tagChollo: '💎 Chollo',
@@ -589,7 +604,7 @@ const I18N = {
     heroSubtitle: 'Una guía de restaurantes por toda Catalunya — Barcelona, Costa Brava y mucho más — con valoraciones reales de Google y precio estimado por persona. Filtra por zona, tipo de cocina o presupuesto y encuentra dónde comer bien.',
     statRestaurants: 'restaurantes',
     statValue: 'buena relación calidad-precio',
-    statVisited: 'visitados',
+    statVisited: 'visitados (tuyos)',
     statZones: 'zonas',
     searchPlaceholder: 'Busca un restaurante, ciudad o especialidad...',
     allZones: 'Todas las zonas',
@@ -620,6 +635,7 @@ const I18N = {
     labelRating: 'Valoración Google (0-5)',
     labelPrice: 'Precio medio (€/pers.)',
     labelMaps: 'Enlace de Google Maps',
+    labelTikTok: 'Enlace de TikTok (opcional)',
     labelObs: 'Observaciones',
     phObs: 'Notas, avisos, cosas a tener en cuenta...',
     saveBtn: 'Guardar restaurante',
@@ -629,8 +645,8 @@ const I18N = {
     iosBannerText: 'Instala Paladar: toca <strong>Compartir</strong> ⬆️ y luego <strong>"Añadir a pantalla de inicio"</strong>.',
     mapLink: 'Cómo llegar ↗',
     shareBtn: 'Compartir ↗',
-    visitTitle: 'Marcar como visitado',
-    favTitle: 'Marcar como favorito',
+    visitTitle: 'Marcar como visitado (solo para ti)',
+    favTitle: 'Marcar como favorito (solo para ti)',
     editBtn: 'Editar',
     delBtn: 'Eliminar',
     tagChollo: '💎 Chollo',
@@ -666,7 +682,7 @@ const I18N = {
     heroSubtitle: 'A restaurant guide across Catalonia — Barcelona, the Costa Brava and much more — with real Google ratings and estimated price per person. Filter by area, cuisine or budget and find somewhere great to eat.',
     statRestaurants: 'restaurants',
     statValue: 'good value for money',
-    statVisited: 'visited',
+    statVisited: 'visited (yours)',
     statZones: 'areas',
     searchPlaceholder: 'Search a restaurant, city or specialty...',
     allZones: 'All areas',
@@ -697,6 +713,7 @@ const I18N = {
     labelRating: 'Google rating (0-5)',
     labelPrice: 'Average price (€/person)',
     labelMaps: 'Google Maps link',
+    labelTikTok: 'TikTok link (optional)',
     labelObs: 'Notes',
     phObs: 'Notes, warnings, things to keep in mind...',
     saveBtn: 'Save restaurant',
@@ -706,8 +723,8 @@ const I18N = {
     iosBannerText: 'Install Paladar: tap <strong>Share</strong> ⬆️ then <strong>"Add to Home Screen"</strong>.',
     mapLink: 'Directions ↗',
     shareBtn: 'Share ↗',
-    visitTitle: 'Mark as visited',
-    favTitle: 'Mark as favorite',
+    visitTitle: 'Mark as visited (local)',
+    favTitle: 'Mark as favorite (local)',
     editBtn: 'Edit',
     delBtn: 'Delete',
     tagChollo: '💎 Best value',
@@ -875,9 +892,10 @@ function populateSelects() {
 }
 
 function updateStats(filtered) {
+  const prefs = getUserPrefs();
   document.getElementById('stat-total').textContent = allData.length;
   document.getElementById('stat-chollo').textContent = allData.filter(isChollo).length;
-  document.getElementById('stat-visited').textContent = allData.filter(d => d.visited).length;
+  document.getElementById('stat-visited').textContent = prefs.visited.length; // Usa los locales
   document.getElementById('stat-zones').textContent = new Set(allData.map(d => d.zona)).size;
   const rc = document.getElementById('result-count');
   rc.textContent = filtered.length === allData.length
@@ -944,6 +962,7 @@ function render() {
     });
   }
 
+  currentFilteredData = filtered; // Guardem per a la ruleta
   updateStats(filtered);
   renderGrid(filtered);
   updateMapMarkers(filtered);
@@ -958,6 +977,9 @@ function renderGrid(filtered) {
     return;
   }
 
+  // Obtenim preferències locals
+  const prefs = getUserPrefs();
+
   filtered.forEach(d => {
     const card = document.createElement('div');
     card.className = 'card';
@@ -966,6 +988,10 @@ function renderGrid(filtered) {
     const priceText = d.preu_mig != null ? `${Math.round(d.preu_mig)}€` : (d.preu || '—');
     const distText = (d._distance !== undefined && d._distance < 99999) ? ` • 📍 ${d._distance.toFixed(1)} km` : '';
     
+    // Verifiquem els estats locals
+    const isVisited = prefs.visited.includes(d.id);
+    const isFavorite = prefs.favorites.includes(d.id);
+
     card.innerHTML = `
       <div class="card-top">
         <h3 class="card-title">${escapeHtml(d.restaurant)}</h3>
@@ -975,8 +1001,8 @@ function renderGrid(filtered) {
         <span class="tag zona">${escapeHtml(d.zona)}${distText}</span>
         <span class="tag tipus">${escapeHtml(d.tipus)}</span>
         ${chollo ? `<span class="tag chollo">${t('tagChollo')}</span>` : ''}
-        ${d.visited ? `<span class="tag visited">${t('tagVisited')}</span>` : ''}
-        ${d.favorite ? `<span class="tag favorite">${t('tagFavorite')}</span>` : ''}
+        ${isVisited ? `<span class="tag visited">${t('tagVisited')}</span>` : ''}
+        ${isFavorite ? `<span class="tag favorite">${t('tagFavorite')}</span>` : ''}
       </div>
       <p class="esp">${escapeHtml(localizedField(d, 'especialitat'))}</p>
       ${localizedField(d, 'observacions') ? `<p class="obs">${escapeHtml(localizedField(d, 'observacions'))}</p>` : ''}
@@ -984,9 +1010,12 @@ function renderGrid(filtered) {
         <div class="price"><b>${priceText}</b> / pers.</div>
         <div class="card-actions">
           ${d.maps_url ? `<a href="${escapeAttr(d.maps_url)}" target="_blank" rel="noopener">${t('mapLink')}</a>` : ''}
+          ${d.tiktok_url ? `<a href="${escapeAttr(d.tiktok_url)}" target="_blank" rel="noopener" style="background:var(--ink);color:var(--bg);">TikTok 🎬</a>` : ''}
           <button class="share-btn" data-name="${escapeAttr(d.restaurant)}" data-zone="${escapeAttr(d.zona)}" data-url="${escapeAttr(d.maps_url || '')}">${t('shareBtn')}</button>
-          <button class="visit-toggle" data-id="${d.id}" title="${t('visitTitle')}">${d.visited ? '✓' : '○'}</button>
-          <button class="fav-toggle" data-id="${d.id}" title="${t('favTitle')}">${d.favorite ? '♥' : '♡'}</button>
+          
+          <button class="visit-toggle" data-id="${d.id}" title="${t('visitTitle')}">${isVisited ? '✓' : '○'}</button>
+          <button class="fav-toggle" data-id="${d.id}" title="${t('favTitle')}">${isFavorite ? '♥' : '♡'}</button>
+          
           <button class="edit" data-id="${d.id}">${t('editBtn')}</button>
           <button class="del" data-id="${d.id}">${t('delBtn')}</button>
         </div>
@@ -1010,25 +1039,19 @@ function renderGrid(filtered) {
     });
   });
 
+  // Guardat en LocalStorage (Ja no crida a Supabase)
   grid.querySelectorAll('button.visit-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
-      requireAuth(async () => {
-        const d = allData.find(x => x.id === id);
-        const ok = await updateRestaurant(id, { visited: !d.visited });
-        if (ok) { d.visited = !d.visited; render(); }
-      });
+      togglePref('visited', id);
     });
   });
 
+  // Guardat en LocalStorage (Ja no crida a Supabase)
   grid.querySelectorAll('button.fav-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-id');
-      requireAuth(async () => {
-        const d = allData.find(x => x.id === id);
-        const ok = await updateRestaurant(id, { favorite: !d.favorite });
-        if (ok) { d.favorite = !d.favorite; render(); }
-      });
+      togglePref('favorites', id);
     });
   });
 
@@ -1145,6 +1168,7 @@ function openModal(existing) {
     document.getElementById('f-lat').value = existing.lat ?? '';
     document.getElementById('f-lon').value = existing.lon ?? '';
     document.getElementById('f-maps').value = existing.maps_url || '';
+    document.getElementById('f-tiktok').value = existing.tiktok_url || ''; // TikTok value
     document.getElementById('f-obs').value = existing.observacions || '';
   } else {
     editingId = null;
@@ -1196,6 +1220,7 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
     lat: latVal,
     lon: lonVal,
     maps_url: document.getElementById('f-maps').value.trim() || null,
+    tiktok_url: document.getElementById('f-tiktok').value.trim() || null, // Guardat de TikTok
     observacions: document.getElementById('f-obs').value.trim(),
   };
   if (!formData.restaurant || !formData.ciutat || !formData.zona || !formData.tipus) return;
@@ -1216,7 +1241,8 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
     showToast(t('toastUpdated', updated.restaurant));
   } else {
     saveBtn.textContent = t('saving');
-    const newEntry = { ...formData, chollo: false, visited: false, favorite: false };
+    // Ja no cal incloure "visited" ni "favorite" a la base de dades
+    const newEntry = { ...formData, chollo: false };
     const inserted = await insertRestaurant(newEntry);
     saveBtn.disabled = false;
     saveBtn.textContent = t('saveBtn');
@@ -1236,6 +1262,18 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
 document.getElementById('chollo-toggle').addEventListener('click', () => {
   document.getElementById('chollo-toggle').classList.toggle('active');
   render();
+});
+
+// NOU: ESDEVENIMENT DE LA RULETA
+document.getElementById('roulette-btn').addEventListener('click', () => {
+  if (currentFilteredData.length > 0) {
+    const randomIndex = Math.floor(Math.random() * currentFilteredData.length);
+    const result = currentFilteredData[randomIndex];
+    // Mostrem una alerta senzilla (es pot millorar amb un modal custom més endavant)
+    alert(`🎲 Paladar et recomana:\n\n🍴 ${result.restaurant}\n📍 ${result.zona}\n🥘 ${result.tipus}\n\nBon profit!`);
+  } else {
+    showToast(t('emptyTitle'));
+  }
 });
 
 const SITE_PASSWORD = 'Orisabio5?';
@@ -1417,7 +1455,6 @@ document.getElementById('review-btn').addEventListener('click', () => {
   });
 });
 document.getElementById('review-close-btn').addEventListener('click', () => {
-  document.getElementById('review-overlay').classList.add('show'); // Fixed logic
   document.getElementById('review-overlay').classList.remove('show');
 });
 document.getElementById('review-overlay').addEventListener('click', (e) => {
