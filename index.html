@@ -6,24 +6,17 @@
 <title>Paladar — Guia de restaurants a Barcelona i Catalunya</title>
 <meta name="description" content="Descobreix on menjar bé arreu de Catalunya — Barcelona, Costa Brava i molt més. Filtra per zona, tipus de cuina i pressupost, amb valoracions reals de Google i preus estimats per persona.">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0E9C93">
+<meta name="theme-color" content="#0D9488">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Paladar">
 
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://paladar-cat.netlify.app">
-<meta property="og:title" content="Paladar — Guia de restaurants a Barcelona i Catalunya">
-<meta property="og:description" content="Descobreix on menjar bé arreu de Catalunya — Barcelona, Costa Brava i molt més. Filtra per zona, tipus de cuina i pressupost.">
-<meta property="og:image" content="https://paladar-cat.netlify.app/og-image.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Paladar — Guia de restaurants a Barcelona i Catalunya">
-<meta name="twitter:description" content="Descobreix on menjar bé arreu de Catalunya — Barcelona, Costa Brava i molt més.">
-<meta name="twitter:image" content="https://paladar-cat.netlify.app/og-image.png">
+<!-- Leaflet CSS per al mapa interactiu -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,7 +116,7 @@
   /* ---------- Controls ---------- */
   .controls { padding: 12px 0 24px; }
   .controls-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .search-box { flex: 1 1 260px; position: relative; }
+  .search-box { flex: 1 1 240px; position: relative; }
   .search-box input {
     width: 100%; padding: 12px 16px 12px 42px; border-radius: 999px;
     border: 1px solid var(--line); background: var(--paper); color: var(--ink);
@@ -148,9 +141,15 @@
     transition: all 0.2s;
   }
   .toggle-chip.active { background: var(--warn-tint); border-color: var(--warn); color: var(--warn); font-weight: 700; }
+  .toggle-chip.active-geo { background: var(--accent-tint); border-color: var(--accent); color: var(--accent-dark); font-weight: 700; }
+  
   .result-count { font-size: 13.5px; color: var(--ink-faint); margin: 6px 4px 20px; font-weight: 500; }
 
-  /* ---------- Grid & Cards (Rediseño Estilo Editorial) ---------- */
+  /* ---------- Vista de Mapa ---------- */
+  #map-view { display: none; width: 100%; height: 60vh; border-radius: var(--radius-lg); border: 1px solid var(--line); margin-bottom: 20px; box-shadow: var(--shadow); z-index: 10; }
+  #map-view.show { display: block; }
+
+  /* ---------- Grid & Cards ---------- */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
   .card {
     background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
@@ -188,27 +187,20 @@
   .price { font-size: 13.5px; color: var(--ink-soft); }
   .price b { color: var(--ink); font-size: 16px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; }
   
-  .card-actions { display: flex; gap: 12px; align-items: center; }
-  .card-actions a {
-    font-size: 13px; font-weight: 700; color: var(--accent-dark); text-decoration: none;
-    background: var(--accent-tint); padding: 6px 12px; border-radius: 999px; transition: background 0.2s;
+  .card-actions { display: flex; gap: 10px; align-items: center; }
+  .card-actions a, .card-actions .share-btn {
+    font-size: 12.5px; font-weight: 700; color: var(--accent-dark); text-decoration: none;
+    background: var(--accent-tint); padding: 6px 10px; border-radius: 999px; transition: background 0.2s; cursor: pointer; border: none;
   }
-  .card-actions a:hover { background: var(--accent); color: #fff; }
+  .card-actions a:hover, .card-actions .share-btn:hover { background: var(--accent); color: #fff; }
   
   .card-actions button {
     background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 0;
   }
   .card-actions button.del { color: var(--danger); font-size: 13px; font-weight: 600; }
   .card-actions button.edit { color: var(--ink-soft); font-size: 13px; font-weight: 600; }
-  .card-actions button.edit:hover, .card-actions button.del:hover { opacity: 0.7; }
-
-  .card-actions button.visit-toggle, .card-actions button.fav-toggle {
-    font-size: 18px; line-height: 1; color: var(--ink-faint); padding: 4px;
-    transition: transform 0.15s;
-  }
-  .card-actions button.visit-toggle:hover, .card-actions button.fav-toggle:hover { transform: scale(1.2); }
-  .card-actions button.visit-toggle { color: var(--accent-dark); }
-  .card-actions button.fav-toggle { color: var(--danger); }
+  .card-actions button.visit-toggle { color: var(--accent-dark); font-size: 18px; }
+  .card-actions button.fav-toggle { color: var(--danger); font-size: 18px; }
 
   .empty { text-align: center; padding: 80px 20px; color: var(--ink-soft); grid-column: 1/-1; }
   .empty h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; color: var(--ink); margin: 0 0 10px; }
@@ -320,6 +312,7 @@
       <div class="brand-name">PALADAR</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
+      <button class="theme-toggle" id="map-toggle-btn" title="Veure mapa" style="width:auto;border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;">🗺️ <span data-i18n="mapBtnText">Mapa</span></button>
       <button class="theme-toggle" id="install-btn" data-i18n-title="installTitle" title="Instal·lar l'app" style="display:none;width:auto;border-radius:999px;padding:0 16px;font-size:13px;font-weight:700;color:var(--accent-dark);background:var(--accent-tint);border-color:var(--accent);"><span data-i18n="installBtn">📲 Instal·la</span></button>
       <button class="theme-toggle" id="backup-btn" data-i18n-title="backupTitle" title="Descarregar còpia de seguretat" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;">💾</button>
       <button class="theme-toggle" id="review-btn" data-i18n-title="reviewBtnTitle" title="Suggeriments pendents" style="width:auto;border-radius:999px;padding:0 12px;font-size:15px;position:relative;">📥<span id="review-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:999px;font-size:10px;font-weight:800;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px;"></span></button>
@@ -362,9 +355,11 @@
         <option value="name-asc" data-i18n="sortName">Nom (A-Z)</option>
       </select>
       <div class="toggle-chip" id="chollo-toggle" data-i18n="cholloToggle">💎 Només chollos</div>
+      <div class="toggle-chip" id="geo-toggle" data-i18n="geoToggle">📍 Cerca propera</div>
     </div>
   </div>
 
+  <div id="map-view"></div>
   <p class="result-count" id="result-count"></p>
   <div class="grid" id="grid"></div>
 </div>
@@ -411,6 +406,16 @@
         <div class="field">
           <label data-i18n="labelPrice">Preu mitjà (€/pers.)</label>
           <input type="number" id="f-preu" step="1" min="0" placeholder="35">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Latitud (per al mapa)</label>
+          <input type="number" id="f-lat" step="0.000001" placeholder="41.3851">
+        </div>
+        <div class="field">
+          <label>Longitud (per al mapa)</label>
+          <input type="number" id="f-lon" step="0.000001" placeholder="2.1734">
         </div>
       </div>
       <div class="field">
@@ -486,6 +491,9 @@ const supabaseClient = (SUPABASE_URL.startsWith('http'))
   : null;
 
 let allData = [];
+let userLocation = null;
+let leafletMap = null;
+let leafletMarkers = [];
 
 const I18N = {
   ca: {
@@ -509,9 +517,11 @@ const I18N = {
     allTypes: 'Tots els tipus',
     sortBest: 'Millor valorats',
     sortPriceAsc: 'Preu: de menys a més',
-    sortPriceDesc: 'Preu: de més a menys',
+    sortPriceDesc: 'Preu: de més a menos',
     sortName: 'Nom (A-Z)',
     cholloToggle: '💎 Només chollos',
+    geoToggle: '📍 Prop de mi',
+    mapBtnText: 'Mapa',
     resultAll: (n) => `Mostrant els ${n} restaurants`,
     resultFiltered: (n, total) => `${n} de ${total} restaurants`,
     addTitle: 'Afegir restaurant',
@@ -539,6 +549,7 @@ const I18N = {
     updating: 'Actualitzant...',
     iosBannerText: 'Instal·la Paladar: toca <strong>Compartir</strong> ⬆️ i després <strong>"Afegeix a pantalla d\'inici"</strong>.',
     mapLink: 'Com arribar ↗',
+    shareBtn: 'Compartir ↗',
     visitTitle: 'Marcar com a visitat',
     favTitle: 'Marcar com a preferit',
     editBtn: 'Editar',
@@ -559,27 +570,8 @@ const I18N = {
     toastUpdated: (name) => `${name} actualitzat`,
     toastAdded: (name) => `${name} afegit a Paladar`,
     toastInstalled: 'Paladar instal·lat! 🎉',
-    supabaseMissingTitle: 'Falta configurar Supabase',
-    supabaseMissingText: 'Obre l\'arxiu HTML amb un editor de text i omple SUPABASE_URL i SUPABASE_ANON_KEY a l\'inici del &lt;script&gt;, seguint les instruccions.',
-    suggestTitle: 'Suggerir un restaurant',
-    suggestModalTitle: 'Suggerir un restaurant',
-    suggestModalSub: 'L\'afegirem a la llista de suggeriments per revisar-lo.',
-    suggestLabelComment: 'Per què el recomanes?',
-    suggestPhComment: 'Ex: Fan una paella boníssima i no és car',
-    suggestLabelContact: 'El teu nom o contacte (opcional)',
-    suggestPhContact: 'Per si vols que t\'ho agraeixi',
-    suggestSendBtn: 'Enviar suggeriment',
-    suggestSending: 'Enviant...',
-    suggestSent: 'Gràcies! Hem rebut el teu suggeriment 🙌',
-    suggestError: 'No s\'ha pogut enviar. Torna-ho a provar.',
-    reviewBtnTitle: 'Suggeriments pendents',
-    reviewTitle: 'Suggeriments pendents',
-    reviewSub: 'Restaurants que ha suggerit la gent que visita Paladar.',
-    reviewEmpty: 'No hi ha cap suggeriment pendent.',
-    reviewAddBtn: 'Afegir',
-    reviewDismissBtn: 'Descartar',
-    reviewDismissConfirm: 'Descartar aquest suggeriment?',
-    reviewNoComment: 'Sense comentari',
+    geoError: 'No s\'ha pogut obtenir la teva ubicació.',
+    sharedToast: 'Enllaç copiat / compartit!',
   },
   es: {
     gateTitle: '🔒 Contraseña',
@@ -605,6 +597,8 @@ const I18N = {
     sortPriceDesc: 'Precio: de más a menos',
     sortName: 'Nombre (A-Z)',
     cholloToggle: '💎 Solo chollos',
+    geoToggle: '📍 Cerca de mí',
+    mapBtnText: 'Mapa',
     resultAll: (n) => `Mostrando los ${n} restaurantes`,
     resultFiltered: (n, total) => `${n} de ${total} restaurantes`,
     addTitle: 'Añadir restaurante',
@@ -632,6 +626,7 @@ const I18N = {
     updating: 'Actualizando...',
     iosBannerText: 'Instala Paladar: toca <strong>Compartir</strong> ⬆️ y luego <strong>"Añadir a pantalla de inicio"</strong>.',
     mapLink: 'Cómo llegar ↗',
+    shareBtn: 'Compartir ↗',
     visitTitle: 'Marcar como visitado',
     favTitle: 'Marcar como favorito',
     editBtn: 'Editar',
@@ -652,27 +647,8 @@ const I18N = {
     toastUpdated: (name) => `${name} actualizado`,
     toastAdded: (name) => `${name} añadido a Paladar`,
     toastInstalled: '¡Paladar instalado! 🎉',
-    supabaseMissingTitle: 'Falta configurar Supabase',
-    supabaseMissingText: 'Abre el archivo HTML con un editor de texto y rellena SUPABASE_URL y SUPABASE_ANON_KEY al inicio del &lt;script&gt;, siguiendo las instrucciones.',
-    suggestTitle: 'Sugerir un restaurante',
-    suggestModalTitle: 'Sugerir un restaurante',
-    suggestModalSub: 'Lo añadiremos a la lista de sugerencias para revisarlo.',
-    suggestLabelComment: '¿Por qué lo recomiendas?',
-    suggestPhComment: 'Ej: Hacen una paella buenísima y no es caro',
-    suggestLabelContact: 'Tu nombre o contacto (opcional)',
-    suggestPhContact: 'Por si quieres que te lo agradezca',
-    suggestSendBtn: 'Enviar sugerencia',
-    suggestSending: 'Enviando...',
-    suggestSent: '¡Gracias! Hemos recibido tu sugerencia 🙌',
-    suggestError: 'No se ha podido enviar. Vuelve a intentarlo.',
-    reviewBtnTitle: 'Sugerencias pendientes',
-    reviewTitle: 'Sugerencias pendientes',
-    reviewSub: 'Restaurantes que ha sugerido la gente que visita Paladar.',
-    reviewEmpty: 'No hay ninguna sugerencia pendiente.',
-    reviewAddBtn: 'Añadir',
-    reviewDismissBtn: 'Descartar',
-    reviewDismissConfirm: '¿Descartar esta sugerencia?',
-    reviewNoComment: 'Sin comentario',
+    geoError: 'No se ha podido obtener tu ubicación.',
+    sharedToast: '¡Enlace copiado / compartido!',
   },
   en: {
     gateTitle: '🔒 Password',
@@ -698,6 +674,8 @@ const I18N = {
     sortPriceDesc: 'Price: high to low',
     sortName: 'Name (A-Z)',
     cholloToggle: '💎 Best value only',
+    geoToggle: '📍 Near me',
+    mapBtnText: 'Map',
     resultAll: (n) => `Showing all ${n} restaurants`,
     resultFiltered: (n, total) => `${n} of ${total} restaurants`,
     addTitle: 'Add restaurant',
@@ -725,6 +703,7 @@ const I18N = {
     updating: 'Updating...',
     iosBannerText: 'Install Paladar: tap <strong>Share</strong> ⬆️ then <strong>"Add to Home Screen"</strong>.',
     mapLink: 'Directions ↗',
+    shareBtn: 'Share ↗',
     visitTitle: 'Mark as visited',
     favTitle: 'Mark as favorite',
     editBtn: 'Edit',
@@ -745,27 +724,8 @@ const I18N = {
     toastUpdated: (name) => `${name} updated`,
     toastAdded: (name) => `${name} added to Paladar`,
     toastInstalled: 'Paladar installed! 🎉',
-    supabaseMissingTitle: 'Supabase setup needed',
-    supabaseMissingText: 'Open the HTML file with a text editor and fill in SUPABASE_URL and SUPABASE_ANON_KEY at the start of the &lt;script&gt;, following the instructions.',
-    suggestTitle: 'Suggest a restaurant',
-    suggestModalTitle: 'Suggest a restaurant',
-    suggestModalSub: "We'll add it to the suggestions list for review.",
-    suggestLabelComment: 'Why do you recommend it?',
-    suggestPhComment: "E.g.: They make an amazing paella and it's not expensive",
-    suggestLabelContact: 'Your name or contact (optional)',
-    suggestPhContact: "In case you'd like a thank you",
-    suggestSendBtn: 'Send suggestion',
-    suggestSending: 'Sending...',
-    suggestSent: 'Thanks! We received your suggestion 🙌',
-    suggestError: 'Could not send. Please try again.',
-    reviewBtnTitle: 'Pending suggestions',
-    reviewTitle: 'Pending suggestions',
-    reviewSub: "Restaurants suggested by people visiting Paladar.",
-    reviewEmpty: 'No pending suggestions.',
-    reviewAddBtn: 'Add',
-    reviewDismissBtn: 'Dismiss',
-    reviewDismissConfirm: 'Dismiss this suggestion?',
-    reviewNoComment: 'No comment',
+    geoError: 'Could not get your location.',
+    sharedToast: 'Link copied / shared!',
   }
 };
 
@@ -826,11 +786,7 @@ async function insertRestaurant(entry) {
     .from('restaurants')
     .insert([entry])
     .select();
-  if (error) {
-    console.error(error);
-    showToast(t('toastSaveError'));
-    return null;
-  }
+  if (error) { console.error(error); showToast(t('toastSaveError')); return null; }
   return data[0];
 }
 
@@ -840,21 +796,13 @@ async function updateRestaurant(id, patch) {
     .update(patch)
     .eq('id', id)
     .select();
-  if (error) {
-    console.error(error);
-    showToast(t('toastUpdateError'));
-    return null;
-  }
+  if (error) { console.error(error); showToast(t('toastUpdateError')); return null; }
   return data[0];
 }
 
 async function deleteRestaurant(id) {
   const { error } = await supabaseClient.from('restaurants').delete().eq('id', id);
-  if (error) {
-    console.error(error);
-    showToast(t('toastDeleteError'));
-    return false;
-  }
+  if (error) { console.error(error); showToast(t('toastDeleteError')); return false; }
   return true;
 }
 
@@ -926,12 +874,24 @@ function localizedField(d, base) {
   return d[base] || '';
 }
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
 function render() {
   const q = document.getElementById('search').value.trim().toLowerCase();
   const fz = document.getElementById('filter-zona').value;
   const ft = document.getElementById('filter-tipus').value;
   const sortBy = document.getElementById('sort-by').value;
   const cholloOnly = document.getElementById('chollo-toggle').classList.contains('active');
+  const geoActive = document.getElementById('geo-toggle').classList.contains('active-geo');
 
   let filtered = allData.filter(d => {
     if (fz && d.zona !== fz) return false;
@@ -944,24 +904,36 @@ function render() {
     return true;
   });
 
-  filtered.sort((a, b) => {
-    if (sortBy === 'google-desc') return (b.google||0) - (a.google||0);
-    if (sortBy === 'price-asc') return (a.preu_mig ?? 9999) - (b.preu_mig ?? 9999);
-    if (sortBy === 'price-desc') return (b.preu_mig ?? -1) - (a.preu_mig ?? -1);
-    if (sortBy === 'name-asc') return a.restaurant.localeCompare(b.restaurant);
-    return 0;
-  });
+  if (geoActive && userLocation) {
+    filtered.forEach(d => {
+      if (d.lat && d.lon) {
+        d._distance = calculateDistance(userLocation.lat, userLocation.lon, d.lat, d.lon);
+      } else {
+        d._distance = 99999;
+      }
+    });
+    filtered.sort((a, b) => a._distance - b._distance);
+  } else {
+    filtered.sort((a, b) => {
+      if (sortBy === 'google-desc') return (b.google||0) - (a.google||0);
+      if (sortBy === 'price-asc') return (a.preu_mig ?? 9999) - (b.preu_mig ?? 9999);
+      if (sortBy === 'price-desc') return (b.preu_mig ?? -1) - (a.preu_mig ?? -1);
+      if (sortBy === 'name-asc') return a.restaurant.localeCompare(b.restaurant);
+      return 0;
+    });
+  }
 
   updateStats(filtered);
+  renderGrid(filtered);
+  updateMapMarkers(filtered);
+}
 
+function renderGrid(filtered) {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
 
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="empty">
-      <h3>${t('emptyTitle')}</h3>
-      <p>${t('emptyText')}</p>
-    </div>`;
+    grid.innerHTML = `<div class="empty"><h3>${t('emptyTitle')}</h3><p>${t('emptyText')}</p></div>`;
     return;
   }
 
@@ -971,13 +943,15 @@ function render() {
     const chollo = isChollo(d);
     const ratingText = d.google != null ? d.google.toFixed(1) : '—';
     const priceText = d.preu_mig != null ? `${Math.round(d.preu_mig)}€` : (d.preu || '—');
+    const distText = (d._distance !== undefined && d._distance < 99999) ? ` • 📍 ${d._distance.toFixed(1)} km` : '';
+    
     card.innerHTML = `
       <div class="card-top">
         <h3 class="card-title">${escapeHtml(d.restaurant)}</h3>
         <div class="rating-badge">★ ${ratingText}</div>
       </div>
       <div class="tag-row">
-        <span class="tag zona">${escapeHtml(d.zona)}</span>
+        <span class="tag zona">${escapeHtml(d.zona)}${distText}</span>
         <span class="tag tipus">${escapeHtml(d.tipus)}</span>
         ${chollo ? `<span class="tag chollo">${t('tagChollo')}</span>` : ''}
         ${d.visited ? `<span class="tag visited">${t('tagVisited')}</span>` : ''}
@@ -989,6 +963,7 @@ function render() {
         <div class="price"><b>${priceText}</b> / pers.</div>
         <div class="card-actions">
           ${d.maps_url ? `<a href="${escapeAttr(d.maps_url)}" target="_blank" rel="noopener">${t('mapLink')}</a>` : ''}
+          <button class="share-btn" data-name="${escapeAttr(d.restaurant)}" data-zone="${escapeAttr(d.zona)}" data-url="${escapeAttr(d.maps_url || '')}">${t('shareBtn')}</button>
           <button class="visit-toggle" data-id="${d.id}" title="${t('visitTitle')}">${d.visited ? '✓' : '○'}</button>
           <button class="fav-toggle" data-id="${d.id}" title="${t('favTitle')}">${d.favorite ? '♥' : '♡'}</button>
           <button class="edit" data-id="${d.id}">${t('editBtn')}</button>
@@ -997,6 +972,22 @@ function render() {
       </div>
     `;
     grid.appendChild(card);
+  });
+
+  // Listeners d'accions
+  grid.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const name = e.currentTarget.getAttribute('data-name');
+      const zone = e.currentTarget.getAttribute('data-zone');
+      const url = e.currentTarget.getAttribute('data-url');
+      const text = `🍴 Recomanació de Paladar: *${name}* (${zone}). ${url ? 'Mides i mapa: ' + url : ''}`;
+      if (navigator.share) {
+        navigator.share({ title: name, text: text, url: url || window.location.href }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text);
+        showToast(t('sharedToast'));
+      }
+    });
   });
 
   grid.querySelectorAll('button.visit-toggle').forEach(btn => {
@@ -1050,6 +1041,61 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return escapeHtml(s); }
 
+// ---- MAPA INTERACTIU (Leaflet) ----
+function initMap() {
+  if (leafletMap) return;
+  leafletMap = L.map('map-view').setView([41.85, 2.15], 8); // Centrat a Catalunya
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap'
+  }).addTo(leafletMap);
+}
+
+function updateMapMarkers(filtered) {
+  if (!leafletMap) return;
+  leafletMarkers.forEach(m => leafletMap.removeLayer(m));
+  leafletMarkers = [];
+
+  filtered.forEach(d => {
+    if (d.lat && d.lon) {
+      const marker = L.marker([d.lat, d.lon]).addTo(leafletMap);
+      marker.bindPopup(`<b>${escapeHtml(d.restaurant)}</b><br>${escapeHtml(d.zona)}<br>★ ${d.google || '—'}`);
+      leafletMarkers.push(marker);
+    }
+  });
+}
+
+document.getElementById('map-toggle-btn').addEventListener('click', () => {
+  const mapDiv = document.getElementById('map-view');
+  mapDiv.classList.toggle('show');
+  if (mapDiv.classList.contains('show')) {
+    initMap();
+    setTimeout(() => leafletMap.invalidateSize(), 200);
+  }
+});
+
+// ---- GEOLOCALITZACIÓ ----
+document.getElementById('geo-toggle').addEventListener('click', () => {
+  const btn = document.getElementById('geo-toggle');
+  if (btn.classList.contains('active-geo')) {
+    btn.classList.remove('active-geo');
+    userLocation = null;
+    render();
+  } else {
+    if (!navigator.geolocation) {
+      showToast(t('geoError'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(pos => {
+      userLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      btn.classList.add('active-geo');
+      render();
+    }, () => {
+      showToast(t('geoError'));
+    });
+  }
+});
+
 let editingId = null;
 
 function openModal(existing) {
@@ -1065,6 +1111,8 @@ function openModal(existing) {
     document.getElementById('f-especialitat').value = existing.especialitat || '';
     document.getElementById('f-google').value = existing.google ?? '';
     document.getElementById('f-preu').value = existing.preu_mig ?? '';
+    document.getElementById('f-lat').value = existing.lat ?? '';
+    document.getElementById('f-lon').value = existing.lon ?? '';
     document.getElementById('f-maps').value = existing.maps_url || '';
     document.getElementById('f-obs').value = existing.observacions || '';
   } else {
@@ -1097,6 +1145,8 @@ document.getElementById('restaurant-form').addEventListener('submit', async (e) 
     google: document.getElementById('f-google').value ? parseFloat(document.getElementById('f-google').value) : null,
     preu_mig: document.getElementById('f-preu').value ? parseFloat(document.getElementById('f-preu').value) : null,
     preu: document.getElementById('f-preu').value ? `${document.getElementById('f-preu').value}€/pers. (estimat)` : '',
+    lat: document.getElementById('f-lat').value ? parseFloat(document.getElementById('f-lat').value) : null,
+    lon: document.getElementById('f-lon').value ? parseFloat(document.getElementById('f-lon').value) : null,
     maps_url: document.getElementById('f-maps').value.trim() || null,
     observacions: document.getElementById('f-obs').value.trim(),
   };
@@ -1270,7 +1320,7 @@ async function renderReviewList() {
   list.innerHTML = '...';
   const pending = await loadPendingSuggestions();
   if (pending.length === 0) {
-    list.innerHTML = `<p style="color:var(--ink-soft);font-size:14px;">${t('reviewEmpty')}</p>`;
+    list.innerHTML = `<p style="color:var(--ink-soft);font-size:14.5px;">${t('reviewEmpty')}</p>`;
     return;
   }
   list.innerHTML = '';
@@ -1319,7 +1369,7 @@ document.getElementById('review-btn').addEventListener('click', () => {
   });
 });
 document.getElementById('review-close-btn').addEventListener('click', () => {
-  document.getElementById('review-overlay').classList.remove('sub') || document.getElementById('review-overlay').classList.remove('show');
+  document.getElementById('review-overlay').classList.remove('show');
 });
 document.getElementById('review-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'review-overlay') document.getElementById('review-overlay').classList.remove('show');
